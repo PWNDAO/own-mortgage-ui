@@ -1,4 +1,5 @@
 <template>
+    <!-- TODO shall we use Progressbar component from shadcn ? -->
     <div class="relative border p-2">
         <div class="absolute inset-0 bg-gradient-to-r from-background to-primary-darker transition-all duration-300 ease-out" :style="{ width: `${progress}%` }"/>
         <div class="text-center relative font-semibold text-3xl transition-colors duration-300" :class="{ 'text-primary-foreground': isHighlighting }">

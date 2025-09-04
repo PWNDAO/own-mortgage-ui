@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model:open="isOpen">
+    <Dialog>
         <DialogTrigger class="w-full">
             <Button size="lg" class="h-[5rem] w-full flex justify-between items-center">
                 <div>
@@ -17,7 +17,7 @@
                 </div>
             </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent class="min-w-[1000px]">
             <DialogHeader>
                 <DialogTitle>Select your credit asset</DialogTitle>
                 <DialogDescription>
@@ -30,6 +30,4 @@
 
 <script setup lang="ts">
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
-
-
 </script>
