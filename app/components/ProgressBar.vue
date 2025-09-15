@@ -31,7 +31,6 @@ const maxAmountFormattedDecimals = computed(() => Number(MAX_AMOUNT_FORMATTED).t
 // Calculate progress percentage
 const progress = computed(() => {
     const percentage = (Number(raisedAmountFormatted.value) / Number(MAX_AMOUNT_FORMATTED)) * 100
-    console.log('percentage', percentage)
     if (percentage > 100) {
         return 100
     }

@@ -1,9 +1,9 @@
 <template>
     <div class="border p-4">
         <div class="mb-4">
-            <h3 class="font-heading text-xl mb-4 font-semibold">SUPPORTERS ({{ displayedSupporters.length }})</h3>
+            <h3 class="font-heading text-xl mb-4">Lenders ({{ displayedSupporters.length }})</h3>
         </div>
-        <hr class="border mb-4">
+        <hr class="mb-4">
         <div class="overflow-y-auto max-h-72 md:max-h-48">
             <div 
                 v-for="supporter in displayedSupporters.slice(0, 30)" 

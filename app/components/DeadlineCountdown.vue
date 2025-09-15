@@ -1,5 +1,5 @@
 <template>
-    <div class="text-gray text-right text-sm">
+    <div class="text-gray-2 text-right text-sm">
         <span>Deadline: {{ countdownText }}</span>
     </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
     <div class="border p-4">
         <h3 class="text-xl font-heading">Crowdsourced DeFi mortgage - terms</h3>
-        <p class="text-gray text-lg mt-1 mb-4">Crypto-backed mortgage-like crowdsourced DeFi loan with gradual installments.</p>
+        <p class="text-gray-2 text-lg mt-1 mb-4">Crypto-backed mortgage-like crowdsourced DeFi loan with gradual installments.</p>
         <div class="grid grid-cols-5 gap-3 mb-6">
             <div v-for="item in TERMS_ITEMS" :key="item.label" class="border p-3">
                 <div class="text-sm text-gray">{{ item.label }}</div>
@@ -27,7 +27,7 @@ const TERMS_ITEMS = [
     },
     {
         label: 'APR (fixed)',
-        value: LOAN_APY,
+        value: `${LOAN_APY * 100}%`,
     },
     {
         label: 'LTV',
