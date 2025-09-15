@@ -14,26 +14,28 @@
 </template>
 
 <script setup lang="ts">
+import { COLLATERAL_NAME, CREDIT_NAME, LOAN_APY, LOAN_DURATION_IN_YEARS, LOAN_LTV } from '~/constants/proposalConstants';
+
 const TERMS_ITEMS = [
     {
         label: 'Collateral',
-        value: 'WETH',
+        value: COLLATERAL_NAME,
     },
     {
         label: 'Credit',
-        value: 'USDC',
+        value: CREDIT_NAME,
     },
     {
         label: 'APR (fixed)',
-        value: '42.74%',
+        value: LOAN_APY,
     },
     {
         label: 'LTV',
-        value: '75%',
+        value: LOAN_LTV,
     },
     {
         label: 'Duration',
-        value: '2 years',
+        value: `${LOAN_DURATION_IN_YEARS}y`,
     },
 ]
 </script>

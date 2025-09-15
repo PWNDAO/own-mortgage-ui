@@ -10,6 +10,11 @@
   <Toaster 
     class="pointer-events-auto"
     close-button
+    :toast-options="{
+      classes: {
+        closeButton: 'text-foreground! hover:text-background!',
+      }
+    }"
   />
 </template>
 

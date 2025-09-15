@@ -10,26 +10,20 @@ export default defineNuxtConfig({
     autoImport: true,
   },
   components: {
-    dirs: ["~/components", "~/components/ui", "~/components/boxes", "~/components/modals", "~/components/tables"],
+    dirs: ["~/components", "~/components/ui", "~/components/boxes", "~/components/modals", "~/components/tables", "~/components/icons"],
   },
   devServer: {
     port: 8000,
   },
   // TODO potentially add also:
-  //  @pinia/nuxt + pinia persisted state?
+  //  pinia persisted state?
   //  @vueuse/nuxt
   //  @nuxtjs/seo
   //  @vue-final-modal/nuxt
   //  @nuxtjs/web-vitals
   //  @nuxtjs/svg-sprite
   //  nuxt-svgo
-  modules: [
-    "@nuxt/eslint",
-    "@nuxt/image",
-    "@wagmi/vue/nuxt",
-    "nuxt-typed-router",
-    "shadcn-nuxt",
-  ],
+  modules: ["@nuxt/eslint", "@nuxt/image", "@wagmi/vue/nuxt", "nuxt-typed-router", "shadcn-nuxt", "@pinia/nuxt"],
   vite: {
     resolve: {
       conditions: ["module", "import", "default"], // prioritize ESM

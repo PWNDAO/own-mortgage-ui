@@ -31,6 +31,7 @@ export function useSupporters() {
     'skas-me.eth'
   ]
   
+  // TODO should we remove?
   // Calculate total amount from all supporters
   const totalAmount = computed(() => {
     return supporters.value.reduce((sum, supporter) => sum + supporter.amount, 0)
@@ -106,6 +107,8 @@ export function useSupporters() {
   const addRandomSupporter = () => {
     // Check if adding more would exceed the maximum amount
     const currentTotal = supporters.value.reduce((sum, supporter) => sum + supporter.amount, 0)
+
+    // TODO remove, or at least take the max amount from the constants
     const maxAmount = 150000
     
     // If we're already at or over the max, don't add more supporters

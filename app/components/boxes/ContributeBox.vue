@@ -2,59 +2,78 @@
     <div class="border p-4">
         <h3 class="text-center font-heading text-xl mb-4 font-semibold text-gray">CONTRIBUTE TO THE CROWDLOAN</h3>
         <div class="mb-3">
-            <LendModal />
+            <AmountInput :is-input-disabled="isSubmitting" />
+            <Button size="lg" class="h-[5rem] w-full flex justify-between items-center mt-3" :disabled="!canSubmit" @click="handleSubmit">
+                <div>
+                    <div class="text-2xl font-bold text-left">LEND</div>
+                    <div class="flex items-center gap-1 text-sm">
+                        <span>+</span>
+                        <span>earn rewards</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-end mb-1">
+                        <img src="/icons/usdc.svg" alt="USDC" width="32" height="32">
+                    </div>
+                </div>
+            </Button>
         </div>
-        <div class="text-gray text-right text-sm">
-            <span>Deadline: {{ countdownText }}</span>
-        </div>
+        <DeadlineCountdown />
     </div>
 </template>
 
 <script setup lang="ts">
-// Set deadline to 03.04.2025 1 pm CET
-const deadline = new Date('2026-04-02T12:00:00+02:00').getTime()
-const countdownText = ref('')
-let timer: ReturnType<typeof setInterval> | null = null
+import { toast } from 'vue-sonner'
+import { CREDIT_NAME, CREDIT_DECIMALS } from '~/constants/proposalConstants';
+import { parseUnits } from 'viem';
+import useAmountInputStore from '~/composables/useAmountInputStore';
+import { useMutation } from '@tanstack/vue-query';
 
-const updateCountdown = () => {
-    const now = new Date().getTime()
-    const distance = deadline - now
+const amountInputStore = useAmountInputStore()
+const { lendAmount } = storeToRefs(amountInputStore)
 
-    // Calculate days, hours, minutes, and seconds
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24))
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000)
+// TODO fetch from real data
+const walletBalance = ref(51200432563n)
 
-    let string = ``
-
-    // Include days in the countdown if there are any
-    if (days > 0) string += `${days}d `
-    if (hours > 0) string += `${hours}h `
-    if (minutes > 0) string += `${minutes}m `
-    if (seconds > 0) string += `${seconds}s`
-
-    // Ensure we always have a non-empty string
-    if (string === '') {
-        string = '0s'
+const canSubmit = computed(() => {
+    const amountStr = lendAmount.value || '0'
+    if (amountStr === '0' || amountStr === '') return false
+    
+    try {
+        const amount = parseUnits(amountStr, CREDIT_DECIMALS)
+        return amount > 0n && amount <= walletBalance.value
+    } catch {
+        return false
     }
-
-    countdownText.value = string
-
-    if (distance < 0) {
-        if (timer) clearInterval(timer)
-        countdownText.value = 'Deadline passed'
-    }
-}
-
-onMounted(() => {
-    updateCountdown()
-    timer = setInterval(updateCountdown, 1000)
 })
 
-onUnmounted(() => {
-    if (timer) {
-        clearInterval(timer)
-    }
+const { createLendingProposal } = useLend()
+
+const { isPending: isSubmitting, mutateAsync: handleSubmit } = useMutation({
+    mutationKey: ['createLendingProposal'],
+    mutationFn: async () => {
+        if (!lendAmount.value) {
+            return
+        }
+
+        const lendAmountCopy = lendAmount.value
+        
+        const createLendingProposalPromise = createLendingProposal()
+        
+        toast.promise(createLendingProposalPromise, {
+            loading: `Creating lending proposal for ${lendAmountCopy} ${CREDIT_NAME}...`,
+            success: () => {
+                return `Lending proposal for ${lendAmountCopy} ${CREDIT_NAME} created successfully`
+            },
+            error: () => {
+                return `Failed to create lending proposal for ${lendAmountCopy} ${CREDIT_NAME}`
+            },
+        })
+
+        await createLendingProposalPromise
+        // Clear the input after submission
+        lendAmount.value = ''
+    },
+    throwOnError: true,
 })
 </script>

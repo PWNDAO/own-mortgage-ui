@@ -43,18 +43,20 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* OVERRIDES */
-  --font-sans: 'Supreme', 'sans-serif';
-
-  /* ADDITIONAL PROPERTIES */
+  /* ADDITIONAL FONTS */
   --font-screener: 'Screener', 'monospace';
   --font-heading: var(--font-screener);
   --font-beon: 'Beon', 'monospace';
   --font-bordel: var(--font-beon);
+  --font-supreme: 'Supreme', 'sans-serif';
+
+  /* OVERRIDES */
+  --font-sans: var(--font-supreme);
 
   /* CUSTOM COLORS */
   --color-grey: var(--grey);
   --color-gray: var(--gray);
+  --color-gray-2: var(--gray-2);
   --color-primary-darker: var(--primary-darker);
   --color-bordel-green: var(--bordel-green);
 }
@@ -98,6 +100,7 @@
   /* CUSTOM */
   --grey: oklch(0.5103 0 0); /* #666666 */
   --gray: var(--grey);
+  --gray-2: oklch(0.6066 0 0); /* #828282 */
   --bordel-green: oklch(0.8664 0.294827 142.4953); /* #00FF00 */
 }
 
