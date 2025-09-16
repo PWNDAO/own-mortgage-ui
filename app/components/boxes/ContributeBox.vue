@@ -8,7 +8,7 @@
         <div class="mb-3">
             <AmountInput :is-input-disabled="isSubmitting" />
             <div v-if="lendAmount && Number(lendAmount) > 0" class="mt-2 text-sm text-gray-2">
-                Note: You already deposited ${{ userDeposit }} USDC. This new deposit brings your total to ${{ Number(userDeposit) + Number(lendAmount) }} USDC.
+                Note: You already deposited ${{ userDeposit }} {{ CREDIT_NAME }}. This new deposit brings your total to ${{ Number(userDeposit) + Number(lendAmount) }} {{ CREDIT_NAME }}.
             </div>
             <Button size="lg" class="h-[5rem] w-full flex justify-between items-center mt-3" :disabled="!canSubmit" @click="handleSubmit">
                 <div>
@@ -20,7 +20,7 @@
                 </div>
                 <div>
                     <div class="flex justify-end mb-1">
-                        <img src="/icons/usdc.svg" alt="USDC" width="32" height="32">
+                        <img :src="CREDIT_ASSET_ICON" :alt="CREDIT_NAME" width="32" height="32">
                     </div>
                 </div>
             </Button>
@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
-import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS } from '~/constants/proposalConstants';
+import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS, CREDIT_ASSET_ICON } from '~/constants/proposalConstants';
 import { erc20Abi, parseUnits, type Address } from 'viem';
 import useAmountInputStore from '~/composables/useAmountInputStore';
 import { useMutation } from '@tanstack/vue-query';

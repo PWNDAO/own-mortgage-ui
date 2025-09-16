@@ -14,7 +14,7 @@ import {
   CategoryScale
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { POSTPONEMENT_IN_MONTHS, LOAN_DURATION_IN_MONTHS, TOTAL_AMOUNT_TO_REPAY } from '~/constants/proposalConstants'
+import { POSTPONEMENT_IN_MONTHS, LOAN_DURATION_IN_MONTHS, TOTAL_AMOUNT_TO_REPAY, CREDIT_NAME } from '~/constants/proposalConstants'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale)
 
@@ -65,7 +65,7 @@ const options = {
     y: {
       title: {
         display: true,
-        text: 'Debt (USDC)'
+        text: `Debt (${CREDIT_NAME})`
       },
       beginAtZero: true
     },

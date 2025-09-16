@@ -17,21 +17,23 @@
 </template>
 
 <script setup lang="ts">
+import { CREDIT_NAME } from '~/constants/proposalConstants';
+
 const REWARDS = [
     {
-        amount: '$1000+ USDC',
+        amount: `$1000+ ${CREDIT_NAME}`,
         reward: '3 months membership',
     },
     {
-        amount: '$3000+ USDC',
+        amount: `$3000+ ${CREDIT_NAME}`,
         reward: '1 year membership',
     },
     {
-        amount: '$5000+ USDC',
+        amount: `$5000+ ${CREDIT_NAME}`,
         reward: 'Organize private event for free',
     },
     {
-        amount: '$10000+ USDC',
+        amount: `$10000+ ${CREDIT_NAME}`,
         reward: 'VIP membership',
     },
 ]

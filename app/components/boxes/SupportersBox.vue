@@ -20,7 +20,7 @@
                     class="font-bold transition-colors duration-300"
                     :class="{ 'text-blue-600': isRecent(supporter.timestamp) }"
                 >
-                    {{ formatAmount(supporter.amount) }} USDC
+                    {{ formatAmount(supporter.amount) }} {{ CREDIT_NAME }}
                 </span>
             </div>
         </div>
@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import { useSupporters } from '~/composables/useSupporters'
+import { CREDIT_NAME } from '~/constants/proposalConstants';
 
 const { supportersList } = useSupporters()
 

@@ -17,13 +17,16 @@ export const PROPOSAL_EXPIRATION = Number(proposal.expiration) // in seconds
 
 // values required to update manually
 export const PROPOSAL_CHAIN_ID = 11155111
-export const CREDIT_DECIMALS = 6
-export const CREDIT_NAME = 'USDC'
-export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
+// export const CREDIT_DECIMALS = 6
+export const CREDIT_DECIMALS = 18
+// export const CREDIT_NAME = 'USDC'
+export const CREDIT_NAME = 'LINK'
+//export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
+export const CREDIT_ASSET_ICON = '/icons/link.svg'
 export const COLLATERAL_NAME = 'WETH'
 
 // note: the max amount will be only enforced on frontend
-export const MAX_AMOUNT: bigint = parseUnits('150000', CREDIT_DECIMALS)
+export const MAX_AMOUNT: bigint = parseUnits('20000', CREDIT_DECIMALS)
 export const MAX_AMOUNT_FORMATTED: string = formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)
 
 // TODO should we implement some kind of decimal.js or other package for high precision calculations?
