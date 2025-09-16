@@ -1,5 +1,5 @@
 <template>
-    <div class="border p-4">
+    <div v-if="isConnected && userDeposit && userDeposit > 0" class="border p-4">
         <h3 class="font-heading text-xl mb-4">Your contribution (${{ userDeposit }} USDC)</h3>
         <hr class="mb-4"/>
         <div>
@@ -11,7 +11,11 @@
 
 <script setup lang="ts">
 import useUserDeposit from '~/composables/useUserDeposit';
+import { useAccount } from '@wagmi/vue';
 
+const { isConnected } = useAccount()
+
+// TODO fetch real data here
 const { userDeposit } = useUserDeposit()
 
 const handleWithdraw = () => {

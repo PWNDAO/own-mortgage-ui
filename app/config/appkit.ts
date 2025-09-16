@@ -16,3 +16,7 @@ export const wagmiAdapter = new WagmiAdapter({
   networks,
   projectId,
 });
+
+export const wagmiConfig = wagmiAdapter.wagmiConfig
+
+export type WagmiConfig = typeof wagmiConfig

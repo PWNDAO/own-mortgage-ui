@@ -27,11 +27,11 @@ const TERMS_ITEMS = [
     },
     {
         label: 'APR (fixed)',
-        value: `${LOAN_APY * 100}%`,
+        value: `${LOAN_APY / 100}%`,
     },
     {
         label: 'LTV',
-        value: LOAN_LTV,
+        value: `${LOAN_LTV / 100}%`,
     },
     {
         label: 'Duration',

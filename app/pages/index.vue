@@ -15,11 +15,7 @@
               <div class="flex flex-col gap-4 min-w-0">
                   <BoxesTermsBox />
                   <BoxesDescriptionBox />
-                  <div class="border p-4">
-                    <h3 class="text-xl font-heading mb-4">Loan Default</h3>
-                    <hr class="mb-4"/>
-                    <LoanDefaultGraph />
-                  </div>
+                  <BoxesLoanDefaultGraphBox />
               </div>
               <div class="flex flex-col gap-4 min-w-0">
                   <BoxesYourContributionBox />

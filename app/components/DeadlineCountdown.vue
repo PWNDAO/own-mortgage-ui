@@ -5,8 +5,9 @@
 </template>
 
 <script setup lang="ts">
-// Set deadline to 03.04.2025 1 pm CET
-const deadline = new Date('2026-04-02T12:00:00+02:00').getTime()
+import { PROPOSAL_EXPIRATION } from '~/constants/proposalConstants'
+
+const deadline = new Date(PROPOSAL_EXPIRATION * 1000).getTime()
 const countdownText = ref('')
 let timer: ReturnType<typeof setInterval> | null = null
 

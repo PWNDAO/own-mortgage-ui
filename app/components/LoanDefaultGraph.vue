@@ -14,7 +14,7 @@ import {
   CategoryScale
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { GRACE_MONTHS, LOAN_DURATION_IN_MONTHS, TOTAL_AMOUNT_TO_REPAY } from '~/constants/proposalConstants'
+import { POSTPONEMENT_IN_MONTHS, LOAN_DURATION_IN_MONTHS, TOTAL_AMOUNT_TO_REPAY } from '~/constants/proposalConstants'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale)
 
@@ -22,11 +22,11 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale,
 const labels = Array.from({ length: LOAN_DURATION_IN_MONTHS + 1 }, (_, i) => `${i}m`)
 
 const limitData = labels.map((_, month) => {
-  if (month <= GRACE_MONTHS) {
+  if (month <= POSTPONEMENT_IN_MONTHS) {
     return TOTAL_AMOUNT_TO_REPAY // flat during grace
   } else {
-    const remainingMonths = LOAN_DURATION_IN_MONTHS - GRACE_MONTHS
-    const progress = (month - GRACE_MONTHS) / remainingMonths
+    const remainingMonths = LOAN_DURATION_IN_MONTHS - POSTPONEMENT_IN_MONTHS
+    const progress = (month - POSTPONEMENT_IN_MONTHS) / remainingMonths
     return TOTAL_AMOUNT_TO_REPAY * (1 - progress)
   }
 })

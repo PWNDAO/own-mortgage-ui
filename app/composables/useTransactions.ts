@@ -1,0 +1,218 @@
+import to from '@/lib/await-to-js'
+import type { Abi, Address, ContractFunctionArgs, ContractFunctionName, TransactionReceipt } from 'viem'
+// TODO is it fine to import from @wagmi/core/actions instead of @wagmi/vue/actions?
+import { getAccount, getBlockNumber, getPublicClient, getTransactionReceipt, switchChain, waitForTransactionReceipt, watchContractEvent, writeContract } from '@wagmi/core/actions'
+import type { WriteContractVariables } from '@wagmi/core/query'
+import type { AnyFunction } from '@/typing/customTypes'
+// TODO should we have here also option to manipulate the toast step during the tx (e.g. for showing the tx hash)?
+// import type { ToastStep } from '@/modules/common/notifications/useToastsStore'
+import { wagmiConfig, type WagmiConfig } from '~/config/appkit'
+import { SAFE_WALLET_ABI } from '~/assets/abis/SafeWalletAbi'
+import { useConnectedAccountTypeStore } from './useConnectedAccountTypeStore'
+
+ 
+export interface SendTransactionHooks {
+  onWriteContractSuccess?: AnyFunction
+  onTxConfirmSuccess?: AnyFunction
+  onWriteContractError?: AnyFunction
+  onTxConfirmError?: AnyFunction
+}
+
+export interface SendTransactionOptions {
+  hooks?: SendTransactionHooks
+  // step?: ToastStep
+}
+
+export async function getSafeWalletThreshold(safeAddress: Address, chainId: number) {
+  const publicClient = getPublicClient(wagmiConfig, { chainId })
+
+  if (!publicClient) {
+    throw new Error('Public client not found')
+  }
+
+  const threshold = await publicClient.readContract({
+    address: safeAddress,
+    abi: SAFE_WALLET_ABI,
+    functionName: 'getThreshold',
+  })
+
+  return Number(threshold)
+}
+
+// TODO change type of transaction parameter to always have chainId filled, right now it's marked as optional
+//  and also allows undefined value, which we should not allow
+export async function sendTransaction<
+  const TAbi extends Abi,
+  TFunctionName extends ContractFunctionName<TAbi, 'nonpayable' | 'payable'>,
+  TArgs extends ContractFunctionArgs<TAbi, 'nonpayable' | 'payable', TFunctionName>
+>(
+  transaction: WriteContractVariables<TAbi, TFunctionName, TArgs, WagmiConfig, WagmiConfig['chains'][number]['id']>,
+  { hooks/*, step*/ }: SendTransactionOptions = {},
+): Promise<TransactionReceipt> {
+  // console.log('Starting to send a transaction with following parameters:')
+  // console.log(transaction)
+
+  const connectedChainId = getAccount(wagmiConfig).chainId
+  console.log(`connectedChainId=${connectedChainId}; transaction.chainId=${transaction.chainId}`)
+
+  if (connectedChainId !== transaction.chainId) {
+    // console.log(`Switching chain from ${connectedChainId} to ${transaction.chainId}.`)
+    const switchedChain = await switchChain(wagmiConfig, { chainId: transaction.chainId! })
+    if (switchedChain.id !== transaction.chainId) {
+      throw new Error('User denied switching chains before sending a tx.')
+    }
+  }
+
+  const { address: userAddress } = getAccount(wagmiConfig)
+
+  // note: if signing with a Safe{Wallet}, the txHash is safeTxHash and not the real txHash
+  const [writeTxError, txHash] = await to(writeContract(wagmiConfig, transaction))
+  if (writeTxError || !txHash) {
+    if (hooks?.onWriteContractError) {
+      hooks.onWriteContractError()
+    }
+    throw writeTxError
+  }
+
+  console.log(`Transaction hash: ${txHash}`)
+  if (hooks?.onWriteContractSuccess) {
+    hooks.onWriteContractSuccess()
+  }
+
+  let threshold: number | undefined
+  if (useConnectedAccountTypeStore().isConnectedContractWallet && userAddress) {
+    // TODO do we need to call this here, or just get the value from useConnectedAccountTypeStore?
+    threshold = await getSafeWalletThreshold(userAddress, transaction.chainId!)
+    console.log('multisig threshold', threshold)
+  }
+
+  // if threshold is truthy, it means we are signing with a Safe{Wallet} in which case the
+  //  txHash is safeTxHash and not the real txHash
+  // in the following block, if we passed `step`, we are checking here if the txHash exists
+  //  and if yes, we assign it to the step.txHash
+  // if (/*step &&*/ !threshold) {
+  //   try {
+  //     await getTransaction(wagmiConfig, {
+  //       hash: txHash,
+  //       chainId: transaction.chainId,
+  //     })
+  //     // step.txHash = txHash
+  //   // eslint-disable-next-line
+  //   } catch (error) {}
+  // }
+
+  let txReceipt: TransactionReceipt | undefined
+  let confirmTxError: Error | null = null
+  if (useConnectedAccountTypeStore().isConnectedContractWallet) {
+    const contractWalletAddress = getAccount(wagmiConfig).address!
+
+    txReceipt = await new Promise<TransactionReceipt>((resolve) => {
+      const contractEventParameters = {
+        abi: SAFE_WALLET_ABI,
+        address: contractWalletAddress,
+        eventName: 'ExecutionSuccess',
+        chainId: transaction.chainId,
+      } as const
+
+      const unwatch = watchContractEvent(wagmiConfig, {
+        ...contractEventParameters,
+         
+        async onLogs(logs) {
+          console.log('Received following logs from the contract wallet: ')
+          console.log(logs)
+
+          // note: we also check for topics[1] === txHash because in some cases the log.args are undefined (not sure why)
+          const log = logs.find(_log => _log.args?.txHash === txHash || _log.transactionHash === txHash || _log.topics?.[1] === txHash)
+          if (!log) {
+            console.log(`No log with corresponding transaction hash (${txHash}) found.`)
+            return
+          }
+
+          // if (step && !step.txHash) {
+          //   step.txHash = log.transactionHash
+          // }
+
+          unwatch()
+          const txReceipt = await getTransactionReceipt(wagmiConfig, { hash: log.transactionHash, chainId: transaction.chainId })
+          console.log('Contract wallet has successfully executed a transaction!')
+          resolve(txReceipt)
+        },
+      })
+      console.log(`Waiting for ExecutionSuccess event on contract wallet on address=${contractWalletAddress} and chain ID=${transaction.chainId}.`)
+
+      // it can also happen that the tx event already happened before setting up a watched, so we need to also
+      // look at past X blocks to see if the event is there
+      getBlockNumber(wagmiConfig, { chainId: transaction.chainId })
+        .then(currentBlockNumber => {
+          return getPublicClient(wagmiConfig, { chainId: transaction.chainId! })!.getContractEvents({
+            ...contractEventParameters,
+            fromBlock: currentBlockNumber - 500n,
+          })
+        }).then(logs => {
+          // note: we also check for topics[1] === txHash because in some cases the log.args are undefined (not sure why)
+          const log = logs.find(_log => _log.args?.txHash === txHash || _log.transactionHash === txHash || _log.topics?.[1] === txHash)
+          if (!log) {
+            console.log(`No log with corresponding transaction hash (${txHash}) found in the past blocks.`)
+            return
+          }
+
+          console.log('Found a corresponding event from a transaction execution in the past blocks.')
+          console.log(log)
+
+          // if (step && !step.txHash) {
+          //     step.txHash = log.transactionHash
+          //   }
+
+          unwatch()
+          return getTransactionReceipt(wagmiConfig, { hash: log.transactionHash, chainId: transaction.chainId })
+        }).then(txReceipt => {
+          if (txReceipt) {
+            console.log('Contract wallet has successfully executed a transaction!')
+            resolve(txReceipt)
+          }
+        }).catch(err => {
+          console.error('Error while getting a past safe wallet ExecutionSuccess events.')
+          console.error(err)
+        })
+    })
+  } else {
+    // let intervalId: IntervalId | undefined
+    // if (step) {
+    //   const TOO_LONG_TIME = 30000
+    //   const INTERVAL_TIME = 500
+    //   let elapsedTime = 0
+    //   intervalId = setInterval(() => {
+    //     if (elapsedTime >= TOO_LONG_TIME) {
+    //       step.isRunningLong = true
+    //     }
+    //     elapsedTime += INTERVAL_TIME
+    //   }, INTERVAL_TIME)
+    // }
+
+    [confirmTxError, txReceipt] = await to(waitForTransactionReceipt(wagmiConfig, { hash: txHash, chainId: transaction.chainId, retryCount: 10 }))
+
+    // if (intervalId !== undefined) {
+    //   clearInterval(intervalId)
+    //   if (step?.isRunningLong) {
+    //     step.isRunningLong = false
+    //   }
+    // }
+  }
+
+  if (confirmTxError || !txReceipt) {
+    if (hooks?.onTxConfirmError) {
+      hooks.onTxConfirmError()
+    }
+    throw confirmTxError
+  }
+
+  console.log('Tx receipt: ')
+  console.log(txReceipt)
+
+  if (hooks?.onTxConfirmSuccess) {
+    hooks.onTxConfirmSuccess()
+  }
+
+  return txReceipt
+}
+ 

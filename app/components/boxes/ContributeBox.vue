@@ -86,6 +86,7 @@ const { isPending: isSubmitting, mutateAsync: handleSubmit } = useMutation({
 
         const lendAmountCopy = lendAmount.value
         
+        // TODO should we display the transaction hash somewhere in the UI, with link to block explorer?
         const createLendingProposalPromise = createLendingProposal()
         
         toast.promise(createLendingProposalPromise, {
