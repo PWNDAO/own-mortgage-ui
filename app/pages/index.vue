@@ -13,17 +13,27 @@
       <div class="flex flex-col gap-4">
           <div class="grid gap-4 grid-cols-2">
               <div class="flex flex-col gap-4 min-w-0">
-                  <BoxesTermsBox />
-                  <BoxesDescriptionBox />
-                  <BoxesLoanDefaultGraphBox />
+                  <TermsBox />
+                  <DescriptionBox />
+                  <LoanDefaultGraphBox />
               </div>
               <div class="flex flex-col gap-4 min-w-0">
-                  <BoxesYourContributionBox />
-                  <BoxesContributeBox />
-                  <BoxesSupportersBox />
-                  <BoxesRewardsBox />
+                  <YourContributionBox />
+                  <ContributeBox />
+                  <SupportersBox />
+                  <RewardsBox />
               </div>
           </div>
       </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import ContributeBox from '~/components/boxes/ContributeBox.vue';
+import DescriptionBox from '~/components/boxes/DescriptionBox.vue';
+import LoanDefaultGraphBox from '~/components/boxes/LoanDefaultGraphBox.vue';
+import RewardsBox from '~/components/boxes/RewardsBox.vue';
+import SupportersBox from '~/components/boxes/SupportersBox.vue';
+import TermsBox from '~/components/boxes/TermsBox.vue';
+import YourContributionBox from '~/components/boxes/YourContributionBox.vue';
+</script>
