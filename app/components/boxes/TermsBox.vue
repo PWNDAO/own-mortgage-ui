@@ -8,7 +8,7 @@
                 <div class="text-2xl font-semibold">{{ item.value }}</div>
             </div>
         </div>
-        <div class="mt-6 mb-4">Raised so far</div>
+        <div class="mt-6 mb-6">Raised so far</div>
         <ProgressBar />
     </div>
 </template>
