@@ -2,6 +2,7 @@ import { defineNuxtPlugin } from "#imports";
 import { QueryClient, VueQueryPlugin } from "@tanstack/vue-query";
 
 export default defineNuxtPlugin((nuxt) => {
+  // TODO adjust these default values
   const queryClient = new QueryClient({
     defaultOptions: { 
       queries: { 

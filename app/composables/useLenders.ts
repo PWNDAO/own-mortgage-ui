@@ -163,7 +163,7 @@ export const useLenders = () => {
 
   // Load cached data
   const loadCachedData = (): CachedLendersData | null => {
-    if (process.client) {
+    //if (process.client) {
       try {
         const cached = localStorage.getItem(CACHE_KEY)
         if (cached) {
@@ -177,19 +177,19 @@ export const useLenders = () => {
       } catch (error) {
         console.warn('Failed to load cached lenders data:', error)
       }
-    }
+    //}
     return null
   }
 
   // Save data to cache
   const saveToCache = (data: CachedLendersData) => {
-    if (process.client) {
+    // if (process.client) {
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(data))
       } catch (error) {
         console.warn('Failed to save lenders data to cache:', error)
       }
-    }
+    //}
   }
 
   // Convert balances to lender array
