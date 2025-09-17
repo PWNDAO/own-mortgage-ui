@@ -2,7 +2,7 @@
   <div>
       <div class="text-center pt-2 pb-10">
           <div class="flex justify-end mb-4">
-            <ModalsShareModal />
+            <ShareModal />
           </div>
           <h1 class="text-5xl font-beon">
               <span class="text-bordel-green">BORDEL</span> HACKERSPACE
@@ -13,15 +13,15 @@
       <div class="flex flex-col gap-4">
           <div class="grid gap-4 grid-cols-2">
               <div class="flex flex-col gap-4 min-w-0">
-                  <BoxesTermsBox />
-                  <BoxesDescriptionBox />
-                  <BoxesLoanDefaultGraphBox />
+                  <TermsBox />
+                  <DescriptionBox />
+                  <LoanDefaultGraphBox />
               </div>
               <div class="flex flex-col gap-4 min-w-0">
-                  <BoxesYourContributionBox />
-                  <BoxesContributeBox />
-                  <BoxesSupportersBox />
-                  <BoxesRewardsBox />
+                  <YourContributionBox />
+                  <ContributeBox />
+                  <SupportersBox />
+                  <RewardsBox />
               </div>
           </div>
       </div>

@@ -6,6 +6,7 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
+    "generate-cf-pages": "nuxt generate --preset=cloudflare_pages",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
@@ -45,7 +46,7 @@
     "vue-router": "^4.5.1",
     "vue-sonner": "^2.0.8",
     "wagmi": "^2.16.0",
-    "zod": "^4.0.14"
+    "zod": "^3.25.76" 
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",

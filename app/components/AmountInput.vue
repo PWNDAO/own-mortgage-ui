@@ -6,7 +6,7 @@
                 v-if="!!walletBalance && walletBalanceFormatted"
                 class="flex items-center gap-2 font-sm text-sm border-b-1 border-gray-2 hover:border-gray font-supreme hover:cursor-pointer text-gray-2 hover:text-gray transition duration-300"
                 @click="handleWalletBalanceClick">
-                <IconsWalletIcon
+                <WalletIcon
                     class="w-5 h-5"
                     color="var(--gray-2)"/>
                 <SafeDisplayDecimals
