@@ -32,6 +32,7 @@ import { useSupporters } from '~/composables/useSupporters'
 import { CREDIT_NAME } from '~/constants/proposalConstants';
 import { useCrowdsourceLender } from '~/composables/useCrowdsourceLender';
 
+// TODO remove later on, this is just for testing
 const { lenders } = useCrowdsourceLender()
 setInterval(() => {
     console.log('lenders')
