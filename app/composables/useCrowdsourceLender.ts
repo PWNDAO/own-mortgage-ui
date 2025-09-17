@@ -257,7 +257,10 @@ export const useCrowdsourceLender = () => {
     error.value = null
 
     try {
+      console.log('start')
       const result = await loadCrowdsourceLenders(forceRefresh)
+      console.log('result')
+      console.log(result)
       lenders.value = result
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load crowdsource lenders'
@@ -269,10 +272,8 @@ export const useCrowdsourceLender = () => {
 
   // Computed properties
   const totalLenders = computed(() => lenders.value.length)
-  const totalSupply = computed(() => {
-    return lenders.value.reduce((sum, lender) => sum + lender.balance, 0n)
-  })
 
+  // TODO is this fine?
   // Auto-load on mount
   onMounted(() => {
     loadLenders()
@@ -282,7 +283,6 @@ export const useCrowdsourceLender = () => {
     // Data
     lenders: readonly(lenders),
     totalLenders,
-    totalSupply,
     lastFetchTime: readonly(lastFetchTimestamp),
     
     // State
