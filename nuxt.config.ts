@@ -10,6 +10,8 @@ export default defineNuxtConfig({
     autoImport: true,
   },
   components: {
+    // setting pathPrefix to false, as with it the auto imports on cloudflare pages did not
+    //  correctly work for some unknown reason
     dirs: [
       { path: "~/components", pathPrefix: false }, 
       { path: "~/components/ui", pathPrefix: false }, 
