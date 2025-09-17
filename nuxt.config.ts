@@ -10,7 +10,14 @@ export default defineNuxtConfig({
     autoImport: true,
   },
   components: {
-    dirs: ["~/components", "~/components/ui", "~/components/boxes", "~/components/modals", "~/components/tables", "~/components/icons"],
+    dirs: [
+      { path: "~/components", pathPrefix: false }, 
+      { path: "~/components/ui", pathPrefix: false }, 
+      { path: "~/components/boxes", pathPrefix: false }, 
+      { path: "~/components/modals", pathPrefix: false }, 
+      { path: "~/components/tables", pathPrefix: false }, 
+      { path: "~/components/icons", pathPrefix: false }
+    ],
   },
   devServer: {
     port: 8000,

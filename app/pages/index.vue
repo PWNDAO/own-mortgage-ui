@@ -2,7 +2,7 @@
   <div>
       <div class="text-center pt-2 pb-10">
           <div class="flex justify-end mb-4">
-            <ModalsShareModal />
+            <ShareModal />
           </div>
           <h1 class="text-5xl font-beon">
               <span class="text-bordel-green">BORDEL</span> HACKERSPACE
@@ -27,13 +27,3 @@
       </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import ContributeBox from '~/components/boxes/ContributeBox.vue';
-import DescriptionBox from '~/components/boxes/DescriptionBox.vue';
-import LoanDefaultGraphBox from '~/components/boxes/LoanDefaultGraphBox.vue';
-import RewardsBox from '~/components/boxes/RewardsBox.vue';
-import SupportersBox from '~/components/boxes/SupportersBox.vue';
-import TermsBox from '~/components/boxes/TermsBox.vue';
-import YourContributionBox from '~/components/boxes/YourContributionBox.vue';
-</script>

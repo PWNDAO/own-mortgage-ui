@@ -1,6 +1,6 @@
 <template>
   <Button class="text-xs flex items-center gap-2" variant="outline" @click="handleConnectClick">
-    <IconsWalletIcon color="var(--color-foreground)" class="mt-[1px]"/>
+    <WalletIcon color="var(--color-foreground)" class="mt-[1px]"/>
     <span>{{ buttonText }}</span>
   </Button>
 </template>
