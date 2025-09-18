@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "./screener.css";
 @import "./supreme.css";
+@import "./beon.css";
 
 @custom-variant dark (&:is(.dark *));
 
