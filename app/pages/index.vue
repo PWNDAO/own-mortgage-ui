@@ -1,7 +1,8 @@
 <template>
   <div>
       <div class="text-center pt-2 pb-10">
-          <div class="flex justify-end mb-4">
+          <div class="flex justify-end gap-2 mb-6">
+            <NotificationSignupModal />
             <ShareModal />
           </div>
           <h1 class="text-5xl font-beon">
@@ -18,7 +19,6 @@
                   <LoanDefaultGraphBox />
               </div>
               <div class="flex flex-col gap-4 min-w-0">
-                  <YourContributionBox />
                   <ContributeBox />
                   <SupportersBox />
                   <RewardsBox />
@@ -27,3 +27,7 @@
       </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue'
+</script>

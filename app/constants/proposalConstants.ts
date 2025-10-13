@@ -5,6 +5,7 @@ import Decimal from "decimal.js"
 // note: for getting the proposal data, see code in decode-proposal.ts and then update the values here
 
 export const CREDIT_ADDRESS = proposal.creditAddress as Address
+console.log('CREDIT_ADDRESS', CREDIT_ADDRESS)
 export const LOAN_LTV = Number(proposal.loanToValue) // e.g. 7500 is 75%
 export const POSTPONEMENT = Number(proposal.postponement)  // how long till the first repayment, in seconds
 export const POSTPONEMENT_IN_DAYS = Math.round(POSTPONEMENT / 86400)
@@ -20,11 +21,14 @@ export const MINIMAL_CREDIT_AMOUNT = proposal.minCreditAmount
 // values required to update manually
 export const PROPOSAL_CHAIN_ID = 11155111
 // export const CREDIT_DECIMALS = 6
-export const CREDIT_DECIMALS = 18
+// export const CREDIT_DECIMALS = 18
+export const CREDIT_DECIMALS = 2
 // export const CREDIT_NAME = 'USDC'
-export const CREDIT_NAME = 'LINK'
+// export const CREDIT_NAME = 'LINK'
+export const CREDIT_NAME = 'EURS'
 //export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
-export const CREDIT_ASSET_ICON = '/icons/link.svg'
+// export const CREDIT_ASSET_ICON = '/icons/link.svg'
+export const CREDIT_ASSET_ICON = '/icons/eurs.svg'
 export const COLLATERAL_NAME = 'WETH'
 
 // note: the max amount will be only enforced on frontend

@@ -33,7 +33,7 @@ export const isScientificNotation = (num: number | string): boolean => {
 }
   
 // examples of formatting: 1.1234567890 to 1.1234 or 0.00000000006448 to 0.00000000006
-export const formatDecimalPoint = (amount: number | string, numbersBehindDecimalPoint = 4, showZeroes = true): string => {
+export const formatDecimalPoint = (amount: number | string, numbersBehindDecimalPoint = 4, showZeroes = false): string => {
     let stringAmount = ''
     if (typeof amount === 'number' && isScientificNotation(amount)) {
       stringAmount = amount.toFixed(20)

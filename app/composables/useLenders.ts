@@ -47,6 +47,8 @@ interface CachedLendersData {
   totalTransfersProcessed: number
 }
 
+// TODO why do we have there useLenders and useCrowdsourceLender?
+
 // Cache key for localStorage
 const CACHE_KEY = 'pwn_lenders_data'
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes in milliseconds

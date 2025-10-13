@@ -35,7 +35,7 @@ const data = {
   labels,
   datasets: [
     {
-      label: 'Max Debt At Time',
+      label: 'Liquidation Threshold',
       data: limitData,
       borderColor: 'rgb(0, 255, 224)',
       borderDash: [5, 5],

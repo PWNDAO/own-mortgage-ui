@@ -1,26 +1,38 @@
 <template>
     <div class="border p-4">
         <div class="mb-4">
-            <h3 class="font-heading text-xl mb-4">Lenders ({{ displayedSupporters.length }})</h3>
+            <h3 class="font-heading text-xl mb-4">Lenders ({{ totalLenders }})</h3>
         </div>
         <hr class="mb-4">
+        
+        <template v-if="isConnected && userDeposit > 0n">
+            <div class="mb-4 p-3 border">
+                <div class="flex justify-between items-center">
+                    <span class="font-medium text-sm text-gray-300">Your deposit:</span>
+                    <span class="font-bold text-lg text-white">{{ userDepositFormatted }} {{ CREDIT_NAME }}</span>
+                </div>
+            </div>
+
+            <hr class="mb-4">
+        </template>
+
+
         <div class="overflow-y-auto max-h-72 md:max-h-48">
             <div 
-                v-for="supporter in displayedSupporters.slice(0, 30)" 
-                :key="supporter.address + supporter.timestamp" 
+                v-for="lender in lenders" 
+                :key="lender.address" 
                 class="flex justify-between items-center py-1 text-sm md:text-sm sm:text-sm"
             >
                 <span 
                     class="max-w-44 md:max-w-36 sm:max-w-32 overflow-hidden text-ellipsis whitespace-nowrap" 
-                    :title="supporter.address"
+                    :title="lender.address"
                 >
-                    {{ formatAddress(supporter.address) }}
+                    {{ formatAddress(lender.address) }}
                 </span>
                 <span 
                     class="font-bold transition-colors duration-300"
-                    :class="{ 'text-blue-600': isRecent(supporter.timestamp) }"
                 >
-                    {{ formatAmount(supporter.amount) }} {{ CREDIT_NAME }}
+                    {{ formatAmount(lender.balance) }} {{ CREDIT_NAME }}
                 </span>
             </div>
         </div>
@@ -28,24 +40,22 @@
 </template>
 
 <script setup lang="ts">
-import { useSupporters } from '~/composables/useSupporters'
-import { CREDIT_NAME } from '~/constants/proposalConstants';
+import { CREDIT_NAME, CREDIT_DECIMALS } from '~/constants/proposalConstants';
 import { useCrowdsourceLender } from '~/composables/useCrowdsourceLender';
+import useUserDeposit from '~/composables/useUserDeposit';
+import { useAccount } from '@wagmi/vue';
+import { formatUnits } from 'viem';
+import { formatDecimalPoint } from '~/lib/format-decimals';
 
 // TODO remove later on, this is just for testing
-const { lenders } = useCrowdsourceLender()
+const { lenders, totalLenders } = useCrowdsourceLender()
 setInterval(() => {
     console.log('lenders')
     console.log(lenders.value)
 }, 10000)
 
-const { supportersList } = useSupporters()
-
-// Only show the top 10 supporters
-const displayedSupporters = computed(() => {
-    const sortedSupporters = [...supportersList.value].sort((a, b) => b.amount - a.amount)
-    return sortedSupporters
-})
+const { isConnected } = useAccount()
+const { userDeposit, userDepositFormatted } = useUserDeposit()
 
 // Format addresses to be more readable
 const formatAddress = (address: string) => {
@@ -58,14 +68,7 @@ const formatAddress = (address: string) => {
 }
 
 // Format amount with commas and 2 decimal places
-const formatAmount = (amount: number) => {
-    return amount >= 1000 
-        ? Math.floor(amount).toLocaleString()
-        : amount.toFixed(2)
-}
-
-// Check if a transaction is recent (last 5 seconds)
-const isRecent = (timestamp: number) => {
-    return Date.now() - timestamp < 5000
+const formatAmount = (amount: bigint) => {
+    return formatDecimalPoint(formatUnits(amount, CREDIT_DECIMALS), 2)
 }
 </script>

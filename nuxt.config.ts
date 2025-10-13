@@ -63,4 +63,11 @@ export default defineNuxtConfig({
   eslint: {
     checker: true,
   },
+  runtimeConfig: {
+    public: {
+      // TODO is this okay or will our API key gets exposed and someone can use it?
+      //  is there a way how to restrict the key usage to only few domains?
+      moralisApiKey: process.env.NUXT_PUBLIC_MORALIS_API_KEY,
+    }
+  }
 });

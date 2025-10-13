@@ -1,4 +1,5 @@
 import { useLocalStorage } from "@vueuse/core"
+import { getAddress } from "viem"
 import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from '~/constants/addresses'
 
 // Types for Moralis API response
@@ -51,7 +52,7 @@ const crowdsourceLendersCache = useLocalStorage<null | CrowdsourceLender[]>('cro
 
 // Get Moralis API key from environment
 const getMoralisApiKey = () => {
-  const apiKey = process.env.NUXT_PUBLIC_MORALIS_API_KEY
+  const apiKey = useRuntimeConfig().public.moralisApiKey
   if (!apiKey) {
     throw new Error('NUXT_PUBLIC_MORALIS_API_KEY environment variable is required')
   }
@@ -97,8 +98,8 @@ const fetchAllTransferEvents = async (fromDate?: string): Promise<MoralisTransfe
     page++
     
     // Safety check to prevent infinite loops
-    if (page > 1000) {
-      console.warn('Reached maximum page limit (1000) for transfer events')
+    if (page > 10000) {
+      console.warn('Reached maximum page limit (10000) for transfer events')
       break
     }
     
@@ -128,8 +129,8 @@ const calculateLenderBalances = (events: MoralisTransferEvent[]): Record<string,
 
   for (const event of events) {
     const value = BigInt(event.value)
-    const fromAddress = event.from_address.toLowerCase()
-    const toAddress = event.to_address.toLowerCase()
+    const fromAddress = getAddress(event.from_address)
+    const toAddress = getAddress(event.to_address)
 
     // Skip zero address transfers (minting/burning)
     if (fromAddress === '0x0000000000000000000000000000000000000000') {
@@ -177,6 +178,9 @@ const mergeBalances = (
     }
   }
 
+  console.log('cachedBalances')
+  console.log(cachedBalances)
+
   // Calculate changes from new events
   const balanceChanges = calculateLenderBalances(newEvents)
 
@@ -206,6 +210,8 @@ export const loadCrowdsourceLenders = async (forceRefresh: boolean = false) => {
     
     // Fetch new transfer events
     const events = await fetchAllTransferEvents(fromDate)
+    console.log('events')
+    console.log(events)
     
     if (events.length === 0 && !forceRefresh) {
       // No new events and not forcing refresh, keep existing cache
@@ -220,7 +226,11 @@ export const loadCrowdsourceLenders = async (forceRefresh: boolean = false) => {
     } else {
       // Full refresh: calculate all balances from all events
       const allEvents = await fetchAllTransferEvents() // Fetch all events for full refresh
+      console.log('allEvents')
+      console.log(allEvents)
       const balances = calculateLenderBalances(allEvents)
+      console.log('balances')
+      console.log(balances)
       mergedLenders = balancesToLenders(balances)
     }
 
@@ -250,7 +260,8 @@ export const useCrowdsourceLender = () => {
   const lenders = ref<CrowdsourceLender[]>([])
 
   // Load lenders on composable initialization
-  const loadLenders = async (forceRefresh: boolean = false) => {
+  // TODO change forceRefresh to false
+  const loadLenders = async (forceRefresh: boolean = true) => {
     if (isLoading.value) return
 
     isLoading.value = true
@@ -276,6 +287,7 @@ export const useCrowdsourceLender = () => {
   // TODO is this fine?
   // Auto-load on mount
   onMounted(() => {
+    console.log('onMounted')
     loadLenders()
   })
 
