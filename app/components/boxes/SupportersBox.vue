@@ -49,10 +49,6 @@ import { formatDecimalPoint } from '~/lib/format-decimals';
 
 // TODO remove later on, this is just for testing
 const { lenders, totalLenders } = useCrowdsourceLender()
-setInterval(() => {
-    console.log('lenders')
-    console.log(lenders.value)
-}, 10000)
 
 const { isConnected } = useAccount()
 const { userDeposit, userDepositFormatted } = useUserDeposit()

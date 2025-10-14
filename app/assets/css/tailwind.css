@@ -60,6 +60,8 @@
   --color-gray-2: var(--gray-2);
   --color-primary-darker: var(--primary-darker);
   --color-bordel-green: var(--bordel-green);
+  --color-warning: var(--warning);
+  --color-negative: var(--negative);
 }
 
 :root {
@@ -103,6 +105,8 @@
   --gray: var(--grey);
   --gray-2: oklch(0.6066 0 0); /* #828282 */
   --bordel-green: oklch(0.8664 0.294827 142.4953); /* #00FF00 */
+  --warning: rgb(243 248 5);
+  --negative: #f97600;
 }
 
 /* TODO do we need this separate .dark styles / theme? */

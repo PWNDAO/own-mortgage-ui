@@ -69,5 +69,5 @@ export default defineNuxtConfig({
       //  is there a way how to restrict the key usage to only few domains?
       moralisApiKey: process.env.NUXT_PUBLIC_MORALIS_API_KEY,
     }
-  }
+  },
 });

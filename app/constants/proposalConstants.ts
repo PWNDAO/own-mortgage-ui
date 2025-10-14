@@ -31,6 +31,8 @@ export const CREDIT_NAME = 'EURS'
 export const CREDIT_ASSET_ICON = '/icons/eurs.svg'
 export const COLLATERAL_NAME = 'WETH'
 
+export const COLLATERAL_ASSET_ICON = '/icons/chain/ethereum.svg'
+
 // note: the max amount will be only enforced on frontend
 export const MAX_AMOUNT: bigint = parseUnits('20000', CREDIT_DECIMALS)
 export const MAX_AMOUNT_FORMATTED: string = formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)

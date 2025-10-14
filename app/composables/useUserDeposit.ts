@@ -34,11 +34,6 @@ export default function useUserDeposit() {
         return formatDecimalPoint(userDepositFormatted.value, 2)
     })
 
-    // TODO remove logs everywhere
-    setInterval(() => {
-        console.log('userDeposit', userDeposit.value)
-    }, 2000)
-
     return {
         userDeposit,
         userDepositFormatted,

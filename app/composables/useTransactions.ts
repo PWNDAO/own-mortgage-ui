@@ -1,11 +1,10 @@
 import to from '@/lib/await-to-js'
 import type { Abi, Address, ContractFunctionArgs, ContractFunctionName, TransactionReceipt } from 'viem'
 // TODO is it fine to import from @wagmi/core/actions instead of @wagmi/vue/actions?
-import { getAccount, getBlockNumber, getPublicClient, getTransactionReceipt, switchChain, waitForTransactionReceipt, watchContractEvent, writeContract } from '@wagmi/core/actions'
+import { getAccount, getBlockNumber, getPublicClient, getTransaction, getTransactionReceipt, switchChain, waitForTransactionReceipt, watchContractEvent, writeContract } from '@wagmi/core/actions'
 import type { WriteContractVariables } from '@wagmi/core/query'
-import type { AnyFunction } from '@/typing/customTypes'
-// TODO should we have here also option to manipulate the toast step during the tx (e.g. for showing the tx hash)?
-// import type { ToastStep } from '@/modules/common/notifications/useToastsStore'
+import type { AnyFunction, IntervalId } from '@/typing/customTypes'
+import type { ToastStep } from '~/components/ui/toast/useToastsStore'
 import { wagmiConfig, type WagmiConfig } from '~/config/appkit'
 import { SAFE_WALLET_ABI } from '~/assets/abis/SafeWalletAbi'
 import { useConnectedAccountTypeStore } from './useConnectedAccountTypeStore'
@@ -20,7 +19,7 @@ export interface SendTransactionHooks {
 
 export interface SendTransactionOptions {
   hooks?: SendTransactionHooks
-  // step?: ToastStep
+  step?: ToastStep
 }
 
 export async function getSafeWalletThreshold(safeAddress: Address, chainId: number) {
@@ -47,7 +46,7 @@ export async function sendTransaction<
   TArgs extends ContractFunctionArgs<TAbi, 'nonpayable' | 'payable', TFunctionName>
 >(
   transaction: WriteContractVariables<TAbi, TFunctionName, TArgs, WagmiConfig, WagmiConfig['chains'][number]['id']>,
-  { hooks/*, step*/ }: SendTransactionOptions = {},
+  { hooks, step }: SendTransactionOptions = {},
 ): Promise<TransactionReceipt> {
   // console.log('Starting to send a transaction with following parameters:')
   // console.log(transaction)
@@ -90,16 +89,16 @@ export async function sendTransaction<
   //  txHash is safeTxHash and not the real txHash
   // in the following block, if we passed `step`, we are checking here if the txHash exists
   //  and if yes, we assign it to the step.txHash
-  // if (/*step &&*/ !threshold) {
-  //   try {
-  //     await getTransaction(wagmiConfig, {
-  //       hash: txHash,
-  //       chainId: transaction.chainId,
-  //     })
-  //     // step.txHash = txHash
-  //   // eslint-disable-next-line
-  //   } catch (error) {}
-  // }
+  if (step && !threshold) {
+    try {
+      await getTransaction(wagmiConfig, {
+        hash: txHash,
+        chainId: transaction.chainId,
+      })
+      step.txHash = txHash
+    // eslint-disable-next-line
+    } catch (error) {}
+  }
 
   let txReceipt: TransactionReceipt | undefined
   let confirmTxError: Error | null = null
@@ -128,9 +127,9 @@ export async function sendTransaction<
             return
           }
 
-          // if (step && !step.txHash) {
-          //   step.txHash = log.transactionHash
-          // }
+          if (step && !step.txHash) {
+            step.txHash = log.transactionHash
+          }
 
           unwatch()
           const txReceipt = await getTransactionReceipt(wagmiConfig, { hash: log.transactionHash, chainId: transaction.chainId })
@@ -159,9 +158,9 @@ export async function sendTransaction<
           console.log('Found a corresponding event from a transaction execution in the past blocks.')
           console.log(log)
 
-          // if (step && !step.txHash) {
-          //     step.txHash = log.transactionHash
-          //   }
+          if (step && !step.txHash) {
+              step.txHash = log.transactionHash
+            }
 
           unwatch()
           return getTransactionReceipt(wagmiConfig, { hash: log.transactionHash, chainId: transaction.chainId })
@@ -176,27 +175,27 @@ export async function sendTransaction<
         })
     })
   } else {
-    // let intervalId: IntervalId | undefined
-    // if (step) {
-    //   const TOO_LONG_TIME = 30000
-    //   const INTERVAL_TIME = 500
-    //   let elapsedTime = 0
-    //   intervalId = setInterval(() => {
-    //     if (elapsedTime >= TOO_LONG_TIME) {
-    //       step.isRunningLong = true
-    //     }
-    //     elapsedTime += INTERVAL_TIME
-    //   }, INTERVAL_TIME)
-    // }
+    let intervalId: IntervalId | undefined
+    if (step) {
+      const TOO_LONG_TIME = 30000
+      const INTERVAL_TIME = 500
+      let elapsedTime = 0
+      intervalId = setInterval(() => {
+        if (elapsedTime >= TOO_LONG_TIME) {
+          step.isRunningLong = true
+        }
+        elapsedTime += INTERVAL_TIME
+      }, INTERVAL_TIME)
+    }
 
     [confirmTxError, txReceipt] = await to(waitForTransactionReceipt(wagmiConfig, { hash: txHash, chainId: transaction.chainId, retryCount: 10 }))
 
-    // if (intervalId !== undefined) {
-    //   clearInterval(intervalId)
-    //   if (step?.isRunningLong) {
-    //     step.isRunningLong = false
-    //   }
-    // }
+    if (intervalId !== undefined) {
+      clearInterval(intervalId)
+      if (step?.isRunningLong) {
+        step.isRunningLong = false
+      }
+    }
   }
 
   if (confirmTxError || !txReceipt) {

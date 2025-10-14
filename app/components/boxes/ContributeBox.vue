@@ -5,8 +5,9 @@
         </div>
         <hr class="mb-4"/>
         <div class="mb-3">
+            <!-- TODO why does the is-input-disabled is not properly enabled again when i cancel the tx? -->
             <AmountInput 
-                :is-input-disabled="isSubmitting" 
+                :is-input-disabled="isApproving || isDepositing || isWithdrawing" 
                 :prefilled-amount="userDepositFormatted" 
             />
             <div v-if="isAmountInputLowerThanUserDeposit" class="mt-2 text-sm text-gray-2">
@@ -27,7 +28,7 @@
                 size="lg" 
                 class="h-[5rem] w-full flex justify-between items-center mt-3" 
                 :disabled="!canSubmit" 
-                @click="handleSubmit"
+                @click="handleDepositClick"
             >
                 <div>
                     <div class="text-2xl font-bold text-left">{{ lendButtonText }}</div>
@@ -42,19 +43,22 @@
                 </div>
             </Button>
         </div>
+        <NotificationSignupModal ref="notificationModal" :display-open-button="false" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { toast } from 'vue-sonner'
-import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS, CREDIT_ASSET_ICON } from '~/constants/proposalConstants';
+import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS, CREDIT_ASSET_ICON, PROPOSAL_CHAIN_ID } from '~/constants/proposalConstants';
 import { erc20Abi, parseUnits, type Address } from 'viem';
 import useAmountInputStore from '~/composables/useAmountInputStore';
 import { useMutation } from '@tanstack/vue-query';
 import { useReadContract, useAccount } from '@wagmi/vue';
-import type NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue';
 import useUserDeposit from '~/composables/useUserDeposit';
 import { formatDecimalPoint } from '~/lib/format-decimals';
+import { ToastStep, Toast, TOAST_ACTION_ID_TO_UNIQUE_ID_FN, ToastActionEnum } from '~/components/ui/toast/useToastsStore';
+import useActionFlow from '~/components/ui/toast/useActionFlow';
+import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue';
+import Decimal from 'decimal.js';
 
 const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
@@ -64,7 +68,7 @@ const { userDeposit, userDepositFormatted } = useUserDeposit()
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
 const amountToWithdraw = computed(() => {
-    return Number(userDepositFormatted.value) - Number(lendAmount.value)
+    return Decimal(userDepositFormatted.value).sub(Decimal(lendAmount.value))
 })
 
 const amountToDepositAdditionally = computed(() => {
@@ -79,10 +83,6 @@ const isAmountInputLowerThanUserDeposit = computed(() => {
     return amountToDepositAdditionally.value < 0 && lendAmount.value !== '0' && lendAmount.value !== ''
 })
 
-const amountToWithdrawFormatted = computed(() => {
-    return formatDecimalPoint(amountToWithdraw.value, 2)
-})
-
 const lendAmountFormatted = computed(() => {
     return formatDecimalPoint(lendAmount.value, 2)
 })
@@ -91,7 +91,7 @@ const lendButtonText = computed(() => {
     if (userDeposit.value > 0n && amountToDepositAdditionally.value > 0) {
         return 'DEPOSIT ' + amountToDepositAdditionallyFormatted.value + ' ' + CREDIT_NAME + ' MORE'
     } else if (isAmountInputLowerThanUserDeposit.value) {
-        return 'WITHDRAW ' + amountToWithdrawFormatted.value + ' ' + CREDIT_NAME
+        return 'WITHDRAW ' + amountToWithdraw.value + ' ' + CREDIT_NAME
     } else if (userDeposit.value === 0n && amountToDepositAdditionally.value > 0) {
         return 'DEPOSIT ' + lendAmountFormatted.value + ' ' + CREDIT_NAME
     } else {
@@ -112,14 +112,35 @@ const walletBalancePlusUserDeposit = computed(() => {
     return (walletBalance.value ?? 0n) + (userDeposit.value ?? 0n)
 })
 
+// TODO remove this + other console logs
+setInterval(() => {
+    console.log('isApproving.value', isApproving.value)
+    console.log('isDepositing.value', isDepositing.value)
+    console.log('isWithdrawing.value', isWithdrawing.value)
+    console.log('walletBalance.value', walletBalance.value)
+    console.log('amountToDepositAdditionally.value', amountToDepositAdditionally.value)
+    console.log('lendAmount.value', lendAmount.value)
+    console.log('walletBalancePlusUserDeposit.value', walletBalancePlusUserDeposit.value)
+}, 5000)
+
 const canSubmit = computed(() => {
+    if (isApproving.value || isDepositing.value || isWithdrawing.value) {
+        return false
+    }
+
+    console.log('asdasddasd')
+
     if (!walletBalance.value) {
         return false
     }
 
+    console.log('blabla')
+
     if (amountToDepositAdditionally.value === 0) {
         return false
     }
+
+    console.log('blabla2')
 
     const amountStr = lendAmount.value || '0'
     if (amountStr === '0' || amountStr === '') {
@@ -128,64 +149,96 @@ const canSubmit = computed(() => {
     
     try {
         const amount = parseUnits(amountStr, CREDIT_DECIMALS)
+        console.log('amount', amount)
+        console.log('walletBalancePlusUserDeposit.value', walletBalancePlusUserDeposit.value)
         return amount > 0n && amount <= walletBalancePlusUserDeposit.value
     } catch {
+        console.error('error parsing amount', amountStr)
         return false
     }
 })
 
-const { createLendingProposal } = useLend()
+const toast = ref<Toast>()
+let continueFlow: () => Promise<void> | undefined
 
-const { isPending: isSubmitting, mutateAsync: handleSubmit } = useMutation({
-    mutationKey: ['createLendingProposal'],
-    mutationFn: async () => {
-        if (!lendAmount.value) {
-            return
-        }
+const { approveForDepositIfNeeded, deposit, withdraw } = useLend()
 
-        const lendAmountCopy = lendAmount.value
-        
-        // TODO should we display the transaction hash somewhere in the UI, with link to block explorer?
-        const createLendingProposalPromise = createLendingProposal()
-        
-        // Show step-based toast
-        const toastId = toast.loading(`Step 1/3: Preparing transaction for ${lendAmountCopy} ${CREDIT_NAME}...`)
-        
-        // TODO refactor this to use real toast from our main app
-        try {
-            await createLendingProposalPromise
-            
-            toast.update(toastId, {
-                id: toastId,
-                type: 'success',
-                title: 'Step 2/3: Transaction confirmed',
-                description: `Lending proposal for ${lendAmountCopy} ${CREDIT_NAME} created successfully`
-            })
-            
-            // Show notification signup modal after successful deposit
-            if (notificationModal.value && Number(lendAmountCopy) > 0) {
-                setTimeout(() => {
-                    notificationModal.value?.openModal()
-                }, 1000)
-            }
-            
-            // Final step toast
-            setTimeout(() => {
-                toast.success('Step 3/3: Complete! Your deposit is now earning rewards.')
-            }, 2000)
-            
-        } catch (error) {
-            toast.update(toastId, {
-                id: toastId,
-                type: 'error',
-                title: 'Transaction failed',
-                description: `Failed to create lending proposal for ${lendAmountCopy} ${CREDIT_NAME}`
-            })
-        }
-
-        // Clear the input after submission
-        lendAmount.value = ''
+const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsync } = useMutation({
+    mutationKey: ['approveForDepositIfNeeded'],
+    mutationFn: async ({ step }: { step: ToastStep }) => {
+        await approveForDepositIfNeeded(step)
     },
     throwOnError: true,
 })
+
+const { isPending: isWithdrawing, mutateAsync: withdrawMutateAsync } = useMutation({
+    mutationKey: ['withdraw'],
+    mutationFn: async ({ step }: { step: ToastStep }) => {
+        await withdraw(parseUnits(amountToWithdraw.value.toString(), CREDIT_DECIMALS), step)
+    },
+    throwOnError: true,
+})
+
+const { isPending: isDepositing, mutateAsync: depositMutateAsync } = useMutation({
+    mutationKey: ['deposit'],
+    mutationFn: async ({ step }: { step: ToastStep }) => {
+        await deposit(step)
+    },
+    onSuccess(data, variables, context) {
+        console.log('deposit success', data, variables, context)
+        lendAmount.value = ''
+
+        notificationModal.value?.openModal()
+    },
+    throwOnError: true,
+})
+
+const handleDepositClick = async () => {
+  const actionId = TOAST_ACTION_ID_TO_UNIQUE_ID_FN[ToastActionEnum.DEPOSIT](lendAmount.value, address.value!)
+
+  console.log('actionId', actionId)
+  console.log('toast.value?.id', toast.value?.id)
+  if (toast.value?.id !== actionId) {
+    const steps: ToastStep[] = []
+    if (!isAmountInputLowerThanUserDeposit.value) {
+        steps.push(new ToastStep({
+            text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
+            async fn(step) {
+                console.log('approving', step)
+                await approveForDepositIfNeededMutateAsync({ step })
+                return true
+            }
+        }))
+    }
+
+    if (isAmountInputLowerThanUserDeposit.value) {
+        steps.push(new ToastStep({
+            text: `Withdrawing ${amountToWithdraw.value} ${CREDIT_NAME}...`,
+            async fn(step) {
+                console.log('withdrawing', step)
+                await withdrawMutateAsync({ step })
+                return true
+            }
+        }))
+    } else {
+        steps.push(new ToastStep({
+            text: `Depositing ${lendAmount.value} ${CREDIT_NAME}...`,
+            async fn(step) {
+                console.log('depositing', step)
+                await depositMutateAsync({ step })
+                return true
+            },
+        }))
+    }
+
+    toast.value = new Toast({
+      steps,
+      chainId: PROPOSAL_CHAIN_ID,
+      title: isAmountInputLowerThanUserDeposit.value ? 'Withdrawing' : 'Depositing',
+    }, ToastActionEnum.DEPOSIT, lendAmount.value, address.value!);
+    ({ continueFlow } = useActionFlow(toast as Ref<Toast>))
+  }
+
+  await continueFlow()
+}
 </script>

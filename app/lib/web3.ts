@@ -1,0 +1,42 @@
+import { UserRejectedRequestError } from 'viem'
+
+export function extractErrorMessage(error: Error): string | undefined {
+    if (!error) {
+      return undefined
+    }
+  
+    if (error instanceof UserRejectedRequestError && 'shortMessage' in error) {
+      return error.shortMessage
+      // TODO check if this behaves fine
+    // } else if (error instanceof AxiosError) {
+    //   if (error?.response?.data && typeof error?.response?.data === 'string' && error.response.data.includes('Django Version:')) {
+    //     // response from BE with debug enabled
+    //     const errorBodySplitted = error.response.data.split('\n')
+    //     return `${errorBodySplitted?.[0]}\n\n${errorBodySplitted?.[1]}`
+    //   }
+  
+    //   return error?.response?.data
+    } else {
+      try {
+        const errorMessageRegex = /Error:\s(.*?)\n\s+((?:.*?\n\s+\(\d+\))|(?:.*?\(\d+\)))/gs
+        const contractCallRegex = /function:\s(.*?)\n\s+args:\s+(.*?)\n/g
+  
+        const errorMessageMatch = errorMessageRegex.exec(error.message)
+        const contractCallMatch = contractCallRegex.exec(error.message)
+  
+        if (errorMessageMatch && contractCallMatch) {
+          const errorMessage = errorMessageMatch[1]
+          const additionalInfo = errorMessageMatch[2]
+          const contractCall = contractCallMatch[1]
+          const args = contractCallMatch[2]
+          return `${errorMessage}${additionalInfo}\n\nFunction call: ${contractCall}${args}`
+        } else {
+          // @ts-expect-error error.shortMessage exists on the viem thrown errors
+          return error?.shortMessage || error.cause || String(error)
+        }
+      } catch {
+        // @ts-expect-error error.shortMessage exists on the viem thrown errors
+        return error?.shortMessage || error.cause || String(error)
+      }
+    }
+  }
