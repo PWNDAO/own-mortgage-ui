@@ -20,8 +20,8 @@
               </div>
               <div class="flex flex-col gap-4 min-w-0">
                   <ContributeBox />
-                  <SupportersBox />
                   <RewardsBox />
+                  <SupportersBox />
               </div>
           </div>
       </div>

@@ -5,7 +5,7 @@ import Decimal from "decimal.js"
 // note: for getting the proposal data, see code in decode-proposal.ts and then update the values here
 
 export const CREDIT_ADDRESS = proposal.creditAddress as Address
-console.log('CREDIT_ADDRESS', CREDIT_ADDRESS)
+export const COLLATERAL_ADDRESS = proposal.collateralAddress as Address
 export const LOAN_LTV = Number(proposal.loanToValue) // e.g. 7500 is 75%
 export const POSTPONEMENT = Number(proposal.postponement)  // how long till the first repayment, in seconds
 export const POSTPONEMENT_IN_DAYS = Math.round(POSTPONEMENT / 86400)

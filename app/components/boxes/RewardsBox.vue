@@ -4,19 +4,12 @@
         <div class="mb-4">
             Lend and get rewards! Based on your tier you will be eligible to receive different benefits.
         </div>
-        <hr class="mb-4"/>
-        
-        <!-- Amount input for calculating rewards -->
-        <div class="mb-4">
-            <label class="text-sm font-medium mb-2 block">Calculate rewards for your amount:</label>
-            <div class="flex items-center gap-2">
-                <Input
-                    v-model="rewardCalculationAmount"
-                    :placeholder="'Enter amount of ' + CREDIT_NAME"
-                    class="flex-1"
-                />
-            </div>
+        <div class="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded">
+            <p class="text-sm text-blue-200">
+                💡 To see what rewards you are eligible for, input the total amount in the amount input field in the Contribute box above.
+            </p>
         </div>
+        <hr class="mb-4"/>
         
         <!-- Rewards list -->
         <div class="space-y-3">
@@ -65,11 +58,13 @@
 
 <script setup lang="ts">
 import { CREDIT_NAME } from '~/constants/proposalConstants';
+import useAmountInputStore from '~/composables/useAmountInputStore';
 
-const rewardCalculationAmount = ref('')
+const amountInputStore = useAmountInputStore()
+const { lendAmount } = storeToRefs(amountInputStore)
 
 const isAmountInputFilled = computed(() => {
-    return rewardCalculationAmount.value && rewardCalculationAmount.value.trim() !== ''
+    return lendAmount.value && lendAmount.value.trim() !== ''
 })
 
 const isAmountInputFilledAndEligibleForReward = (rewardThreshold: number) => {
@@ -104,12 +99,12 @@ const REWARDS = [
 ]
 
 const isEligibleForReward = (reward: number) => {
-    const amount = Number(rewardCalculationAmount.value) || 0
+    const amount = Number(lendAmount.value) || 0
     return amount >= reward
 }
 
 const getMissingAmount = (reward: number) => {
-    const amount = Number(rewardCalculationAmount.value) || 0
+    const amount = Number(lendAmount.value) || 0
     const missing = reward - amount
     return missing > 0 ? missing : 0
 }

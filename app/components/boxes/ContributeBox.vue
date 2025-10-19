@@ -16,7 +16,7 @@
 
             <div class="mt-3 p-3 border border">
                 <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-300">Minimal APR:</span>
+                    <span class="text-sm text-gray-300">APR:</span>
                     <span class="text-lg font-semibold text-green-400">2.5%</span>
                 </div>
                 <div class="text-xs text-gray-400 mt-1">
