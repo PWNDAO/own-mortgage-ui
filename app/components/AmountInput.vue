@@ -20,7 +20,7 @@
                 <Input
                     v-model="lendAmount"
                     placeholder="150.23"
-                    :disabled="walletBalancePlusUserDeposit <= 0n || props.isInputDisabled"
+                    :disabled="isAmountInputDisabled"
                     class="w-full h-[40px]"
                     :class="{ 'border-red-500': isAmountInvalid }"
                 />
@@ -77,6 +77,10 @@ const walletBalance = computed(() => walletBalanceQuery.data.value)
 
 const walletBalancePlusUserDeposit = computed(() => {
     return (walletBalance.value ?? 0n) + (userDeposit.value ?? 0n)
+})
+
+const isAmountInputDisabled = computed(() => {
+    return props.isInputDisabled || (walletBalancePlusUserDeposit.value <= 0n && !userDeposit.value)
 })
 
 const walletBalancePlusUserDepositFormatted = computed(() => {

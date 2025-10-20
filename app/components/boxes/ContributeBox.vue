@@ -14,7 +14,7 @@
                 Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdraw }} {{ CREDIT_NAME }} from your deposit.
             </div>
 
-            <div class="mt-3 p-3 border border">
+            <div class="mt-3 p-3 border">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-300">APR:</span>
                     <span class="text-lg font-semibold text-green-400">2.5%</span>
@@ -68,7 +68,7 @@ const { userDeposit, userDepositFormatted } = useUserDeposit()
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
 const amountToWithdraw = computed(() => {
-    return Decimal(userDepositFormatted.value).sub(Decimal(lendAmount.value))
+    return Decimal(userDepositFormatted.value).sub(Decimal(lendAmount.value || '0'))
 })
 
 const amountToDepositAdditionally = computed(() => {
@@ -80,7 +80,7 @@ const amountToDepositAdditionallyFormatted = computed(() => {
 })
 
 const isAmountInputLowerThanUserDeposit = computed(() => {
-    return amountToDepositAdditionally.value < 0 && lendAmount.value !== '0' && lendAmount.value !== ''
+    return amountToDepositAdditionally.value < 0
 })
 
 const lendAmountFormatted = computed(() => {
@@ -138,6 +138,10 @@ const canSubmit = computed(() => {
 
     if (amountToDepositAdditionally.value === 0) {
         return false
+    }
+
+    if (userDeposit.value) {
+        return true
     }
 
     console.log('blabla2')
