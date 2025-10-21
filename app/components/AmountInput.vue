@@ -41,13 +41,11 @@ import { formatUnits, parseUnits, erc20Abi, type Address } from 'viem'
 import useAmountInputStore from '~/composables/useAmountInputStore'
 import { useReadContract, useAccount } from '@wagmi/vue'
 import { formatDecimalPoint } from '~/lib/format-decimals'
+import { useIsMutating } from '@tanstack/vue-query'
+import MutationIds from '~/constants/mutationIds'
 
-interface Props {
-    isInputDisabled?: boolean
-}
-const props = withDefaults(defineProps<Props>(), {
-    isInputDisabled: false,
-})
+// TODO make sure that the calculations are correct, including usage of the decimal.js
+//  and make sure there are not rounding errors...
 
 const { missingAmount } = useProposal()
 
@@ -62,7 +60,15 @@ watch(userDepositFormatted, (newVal) => {
     }
 }, { immediate: true })
 
-const { address } = useAccount()
+const withdrawingMutationsCount = useIsMutating({ mutationKey: [MutationIds.Withdraw] })
+const depositingMutationsCount = useIsMutating({ mutationKey: [MutationIds.Deposit] })
+const approvingMutationsCount = useIsMutating({ mutationKey: [MutationIds.ApproveForDepositIfNeeded] })
+
+const isPerformingMutations = computed(() => {
+    return withdrawingMutationsCount.value > 0 || depositingMutationsCount.value > 0 || approvingMutationsCount.value > 0
+})
+
+const { address, isConnected } = useAccount()
 
 const walletBalanceQuery = useReadContract({
     abi: erc20Abi,
@@ -80,7 +86,15 @@ const walletBalancePlusUserDeposit = computed(() => {
 })
 
 const isAmountInputDisabled = computed(() => {
-    return props.isInputDisabled || (walletBalancePlusUserDeposit.value <= 0n && !userDeposit.value)
+    if (isPerformingMutations.value) {
+        return true
+    }
+
+    if (!isConnected.value) {
+        return false
+    }
+
+    return walletBalancePlusUserDeposit.value <= 0n && !userDeposit.value
 })
 
 const walletBalancePlusUserDepositFormatted = computed(() => {

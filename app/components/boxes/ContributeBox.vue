@@ -5,11 +5,7 @@
         </div>
         <hr class="mb-4"/>
         <div class="mb-3">
-            <!-- TODO why does the is-input-disabled is not properly enabled again when i cancel the tx? -->
-            <AmountInput 
-                :is-input-disabled="isApproving || isDepositing || isWithdrawing" 
-                :prefilled-amount="userDepositFormatted" 
-            />
+            <AmountInput :prefilled-amount="userDepositFormatted" />
             <div v-if="isAmountInputLowerThanUserDeposit" class="mt-2 text-sm text-gray-2">
                 Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdraw }} {{ CREDIT_NAME }} from your deposit.
             </div>
@@ -17,7 +13,7 @@
             <div class="mt-3 p-3 border">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-300">APR:</span>
-                    <span class="text-lg font-semibold text-green-400">2.5%</span>
+                    <span class="text-lg font-semibold text-green-400">{{ MINIMAL_APR }}%</span>
                 </div>
                 <div class="text-xs text-gray-400 mt-1">
                     You also earn interest while waiting for loan acceptance
@@ -33,7 +29,7 @@
                 <div>
                     <div class="text-2xl font-bold text-left">{{ lendButtonText }}</div>
                     <div class="flex items-center gap-1 text-sm">
-                        <span v-if="amountToDepositAdditionally > 0">+ earn 2% or more</span>
+                        <span v-if="amountToDepositAdditionally > 0">+ earn {{ MINIMAL_APR }}% or more</span>
                     </div>
                 </div>
                 <div>
@@ -48,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS, CREDIT_ASSET_ICON, PROPOSAL_CHAIN_ID } from '~/constants/proposalConstants';
+import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS, CREDIT_ASSET_ICON, PROPOSAL_CHAIN_ID, MINIMAL_APR } from '~/constants/proposalConstants';
 import { erc20Abi, parseUnits, type Address } from 'viem';
 import useAmountInputStore from '~/composables/useAmountInputStore';
 import { useMutation } from '@tanstack/vue-query';
@@ -59,10 +55,17 @@ import { ToastStep, Toast, TOAST_ACTION_ID_TO_UNIQUE_ID_FN, ToastActionEnum } fr
 import useActionFlow from '~/components/ui/toast/useActionFlow';
 import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue';
 import Decimal from 'decimal.js';
+import MutationIds from '~/constants/mutationIds';
+import { useAppKit } from "@reown/appkit/vue";
+import useProposal from '~/composables/useProposal';
 
 const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
-const { address } = useAccount()
+const { address, isConnected } = useAccount()
+
+const { refetchTotalSupply } = useProposal()
+
+const { open } = useAppKit();
 
 const { userDeposit, userDepositFormatted } = useUserDeposit()
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
@@ -128,6 +131,10 @@ const canSubmit = computed(() => {
         return false
     }
 
+    if (!isConnected.value) {
+        return true
+    }
+
     console.log('asdasddasd')
 
     if (!walletBalance.value) {
@@ -168,7 +175,7 @@ let continueFlow: () => Promise<void> | undefined
 const { approveForDepositIfNeeded, deposit, withdraw } = useLend()
 
 const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsync } = useMutation({
-    mutationKey: ['approveForDepositIfNeeded'],
+    mutationKey: [MutationIds.ApproveForDepositIfNeeded],
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await approveForDepositIfNeeded(step)
     },
@@ -176,21 +183,25 @@ const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsyn
 })
 
 const { isPending: isWithdrawing, mutateAsync: withdrawMutateAsync } = useMutation({
-    mutationKey: ['withdraw'],
+    mutationKey: [MutationIds.Withdraw],
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await withdraw(parseUnits(amountToWithdraw.value.toString(), CREDIT_DECIMALS), step)
+    },
+    onSuccess(data, variables, context) {
+        console.log('withdraw success', data, variables, context)
+        refetchTotalSupply()
     },
     throwOnError: true,
 })
 
 const { isPending: isDepositing, mutateAsync: depositMutateAsync } = useMutation({
-    mutationKey: ['deposit'],
+    mutationKey: [MutationIds.Deposit],
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await deposit(step)
     },
     onSuccess(data, variables, context) {
         console.log('deposit success', data, variables, context)
-        lendAmount.value = ''
+        refetchTotalSupply()
 
         notificationModal.value?.openModal()
     },
@@ -198,6 +209,11 @@ const { isPending: isDepositing, mutateAsync: depositMutateAsync } = useMutation
 })
 
 const handleDepositClick = async () => {
+    if (!isConnected.value) {
+        open({ view: 'Connect' })
+        return
+    }
+
   const actionId = TOAST_ACTION_ID_TO_UNIQUE_ID_FN[ToastActionEnum.DEPOSIT](lendAmount.value, address.value!)
 
   console.log('actionId', actionId)

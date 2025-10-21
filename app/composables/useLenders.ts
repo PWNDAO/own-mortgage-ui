@@ -126,6 +126,8 @@ export const useLenders = () => {
     const balances: Record<string, bigint> = {}
 
     for (const event of events) {
+      // TODO if the value is in shares, we need to convert it to assets...
+      //  or is there some better way how to fetch the lenders balances?
       const value = BigInt(event.value)
       const fromAddress = event.from_address.toLowerCase()
       const toAddress = event.to_address.toLowerCase()

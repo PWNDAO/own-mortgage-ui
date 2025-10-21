@@ -37,7 +37,7 @@ const data = {
     {
       label: 'Liquidation Threshold',
       data: limitData,
-      borderColor: 'rgb(0, 255, 224)',
+      borderColor: '#0e9cff',
       borderDash: [5, 5],
       borderWidth: 2,
       fill: false,

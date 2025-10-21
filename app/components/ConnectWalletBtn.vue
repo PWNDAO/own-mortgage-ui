@@ -11,9 +11,9 @@ import { useAccount } from "@wagmi/vue";
 
 const { open } = useAppKit();
 
-const { isConnected, address } = useAccount()
+const { address } = useAccount()
 
-const buttonText = computed(() => isConnected.value ? `${address.value.slice(0, 6)}...${address.value.slice(-4)}` : 'Connect')
+const buttonText = computed(() => address.value ? `${address.value.slice(0, 6)}...${address.value.slice(-4)}` : 'Connect')
 
 function handleConnectClick() {
   open();

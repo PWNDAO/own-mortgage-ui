@@ -1,6 +1,7 @@
 import { formatUnits, parseUnits, type Address } from "viem"
 import { proposal } from "@/lib/decode-proposal"
 import Decimal from "decimal.js"
+import { sepolia } from "@reown/appkit/networks";
 
 // note: for getting the proposal data, see code in decode-proposal.ts and then update the values here
 
@@ -19,7 +20,8 @@ export const PROPOSAL_EXPIRATION = Number(proposal.expiration) // in seconds
 export const MINIMAL_CREDIT_AMOUNT = proposal.minCreditAmount
 
 // values required to update manually
-export const PROPOSAL_CHAIN_ID = 11155111
+export const PROPOSAL_CHAIN = sepolia
+export const PROPOSAL_CHAIN_ID = sepolia.id
 // export const CREDIT_DECIMALS = 6
 // export const CREDIT_DECIMALS = 18
 export const CREDIT_DECIMALS = 2
@@ -41,7 +43,9 @@ export const MAX_AMOUNT_FORMATTED: string = formatUnits(MAX_AMOUNT, CREDIT_DECIM
 // TODO check that this calculation is correct
 export const TOTAL_AMOUNT_TO_REPAY = Number(MAX_AMOUNT_FORMATTED) * (1 + (LOAN_APY / 10000) * LOAN_DURATION_IN_YEARS);
 
-// TODO is decimal.js good choice?
 // TODO move all calculations to decimal.js
-// TODO remove this `- 1` from the calculation, its just for testing
-export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE = new Decimal(formatUnits(MINIMAL_CREDIT_AMOUNT, CREDIT_DECIMALS)).div(formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)).toDecimalPlaces(2, Decimal.ROUND_FLOOR).toString()
+// TODO uncomment this one and remove the hardcoded value below this one
+// export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE = new Decimal(formatUnits(MINIMAL_CREDIT_AMOUNT, CREDIT_DECIMALS)).div(formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)).toDecimalPlaces(2, Decimal.ROUND_FLOOR).toString()
+export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE = '0.6';
+
+export const MINIMAL_APR = 2.5

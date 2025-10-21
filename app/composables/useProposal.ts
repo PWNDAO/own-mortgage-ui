@@ -9,7 +9,8 @@ export default function useProposal() {
     const totalSupplyQuery = useReadContract({
         abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
         address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
-        functionName: 'totalSupply',
+        // TODO totalSupply or totalAssets?
+        functionName: 'totalAssets',
     })
     const totalSupply = computed(() => totalSupplyQuery.data.value)
     const totalSupplyFormatted = computed(() => totalSupply.value ? formatUnits(totalSupply.value, CREDIT_DECIMALS) : '0')
@@ -22,6 +23,6 @@ export default function useProposal() {
         missingAmount,
         totalSupply,
         totalSupplyFormatted,
+        refetchTotalSupply: totalSupplyQuery.refetch,
     }
-
 }

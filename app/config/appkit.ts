@@ -1,10 +1,9 @@
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import { sepolia, type AppKitNetwork } from "@reown/appkit/networks";
+import type { AppKitNetwork } from "@reown/appkit/networks";
+import { PROPOSAL_CHAIN } from "~/constants/proposalConstants";
 
-export const networks = [sepolia] as [AppKitNetwork, ...AppKitNetwork[]];
+export const networks = [PROPOSAL_CHAIN] as [AppKitNetwork, ...AppKitNetwork[]];
 
-// TODO how to resolve this? does it harm anything to have it here in the code?
-//  i think it's visible in the network requests anyway, right?
 // note: hardcoding projectId for now as i had problems with accessing
 //  env variable value in here
 export const projectId = "97c8a94aaca8161de8773d66a5cafc17";
