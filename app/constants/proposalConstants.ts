@@ -1,6 +1,5 @@
 import { formatUnits, parseUnits, type Address } from "viem"
 import { proposal } from "@/lib/decode-proposal"
-import Decimal from "decimal.js"
 import { sepolia } from "@reown/appkit/networks";
 
 // note: for getting the proposal data, see code in decode-proposal.ts and then update the values here
