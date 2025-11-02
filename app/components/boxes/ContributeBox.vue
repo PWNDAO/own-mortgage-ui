@@ -1,7 +1,7 @@
 <template>
-    <div class="border p-4">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="font-heading text-xl">Contribute to the crowdloan</h3>
+    <div class="border p-3 sm:p-4 order-1 lg:order-none">
+        <div class="flex justify-between items-center mb-4 gap-2">
+            <h3 class="font-heading text-lg sm:text-xl">Contribute to the crowdloan</h3>
             <ShareModal />
         </div>
         <hr class="mb-4"/>
@@ -11,19 +11,19 @@
                 Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdraw }} {{ CREDIT_NAME }} from your deposit.
             </div>
 
-            <div class="flex gap-2 mt-3">
+            <div class="flex flex-col sm:flex-row gap-2 mt-3">
                 <div class="p-3 border grow">
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-300">APR:</span>
-                        <span class="text-lg font-semibold text-green-400">{{ MINIMAL_APR }}%</span>
+                        <span class="text-gray-300 text-sm sm:text-base">APR:</span>
+                        <span class="text-base sm:text-lg font-semibold text-green-400">{{ MINIMAL_APR }}%</span>
                     </div>
                     <div class="text-xs text-gray-400 mt-1">
                         You also earn interest while waiting for loan acceptance
                     </div>
                 </div>
 
-                <div class="p-3 border flex gap-5">
-                    <span class="text-gray-300">Chain:</span>
+                <div class="p-3 border flex gap-2 sm:gap-5 items-center">
+                    <span class="text-gray-300 text-sm sm:text-base">Chain:</span>
                     <div>
                         <ChainInfo />
                     </div>
@@ -32,19 +32,19 @@
             
             <Button 
                 size="lg" 
-                class="h-[5rem] w-full flex justify-between items-center mt-3" 
+                class="h-auto min-h-[5rem] sm:h-[5rem] w-full flex justify-between items-center mt-3 px-2 sm:px-4" 
                 :disabled="!canSubmit" 
                 @click="handleDepositClick"
             >
-                <div>
-                    <div class="text-2xl font-bold text-left">{{ lendButtonText }}</div>
-                    <div class="flex items-center gap-1 text-sm">
+                <div class="flex-1 min-w-0">
+                    <div class="text-base sm:text-lg md:text-2xl font-bold text-left break-words">{{ lendButtonText }}</div>
+                    <div class="flex items-center gap-1 text-xs sm:text-sm mt-1">
                         <span v-if="amountToDepositAdditionally > 0">+ earn {{ MINIMAL_APR }}% or more</span>
                     </div>
                 </div>
-                <div>
+                <div class="flex-shrink-0 ml-2">
                     <div class="flex justify-end mb-1">
-                        <img :src="CREDIT_ASSET_ICON" :alt="CREDIT_NAME" width="32" height="32">
+                        <img :src="CREDIT_ASSET_ICON" :alt="CREDIT_NAME" width="32" height="32" class="w-6 h-6 sm:w-8 sm:h-8">
                     </div>
                 </div>
             </Button>

@@ -1,7 +1,7 @@
 <template>
-    <div class="border p-4">
+    <div class="border p-3 sm:p-4 order-6 lg:order-none">
         <div class="mb-4">
-            <h3 class="font-heading text-xl mb-4">Lenders ({{ totalLenders }})</h3>
+            <h3 class="font-heading text-lg sm:text-xl mb-4">Lenders ({{ totalLenders }})</h3>
         </div>
         <hr class="mb-4">
         
@@ -21,16 +21,16 @@
             <div 
                 v-for="lender in lenders" 
                 :key="lender.address" 
-                class="flex justify-between items-center py-1 text-sm md:text-sm sm:text-sm"
+                class="flex justify-between items-center py-1 text-xs sm:text-sm gap-2"
             >
                 <span 
-                    class="max-w-44 md:max-w-36 sm:max-w-32 overflow-hidden text-ellipsis whitespace-nowrap" 
+                    class="max-w-[40%] sm:max-w-44 md:max-w-36 overflow-hidden text-ellipsis whitespace-nowrap" 
                     :title="lender.address"
                 >
                     {{ formatAddress(lender.address) }}
                 </span>
                 <span 
-                    class="font-bold transition-colors duration-300"
+                    class="font-bold transition-colors duration-300 text-right flex-shrink-0"
                 >
                     {{ formatAmount(lender.balance) }} {{ CREDIT_NAME }}
                 </span>

@@ -1,7 +1,7 @@
 <template>
-    <div class="border p-4">
-        <h3 class="font-heading text-xl mb-3">Rewards</h3>
-        <div class="mb-4">
+    <div class="border p-3 sm:p-4 order-4 lg:order-none">
+        <h3 class="font-heading text-lg sm:text-xl mb-3">Rewards</h3>
+        <div class="mb-4 text-sm sm:text-base">
             Lend and get rewards! Based on your tier you will be eligible to receive different benefits.
         </div>
         <div class="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded">

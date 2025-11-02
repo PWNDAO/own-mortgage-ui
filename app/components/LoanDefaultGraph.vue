@@ -1,10 +1,10 @@
 <template>
     <div>
         <div class="mb-4">
-            <p class="mb-2">
+            <p class="mb-2 text-sm sm:text-base">
                 This graph illustrates the loan repayment dynamics and default risk over time.
             </p>
-            <ul class="list-disc list-inside space-y-1">
+            <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm">
                 <li>
                     <span class="font-semibold">Liquidation Threshold</span> (dashed blue line): The maximum debt allowed at any point in time. If the debt exceeds this line, the loan may be liquidated.
                 </li>

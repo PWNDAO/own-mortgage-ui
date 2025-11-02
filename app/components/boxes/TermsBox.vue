@@ -1,16 +1,16 @@
 <template>
-    <div class="border p-4">
-        <h3 class="text-xl font-heading">Crowdsourced DeFi mortgage - terms</h3>
-        <p class="text-gray-2 text-lg mt-1 mb-4">Crypto-backed mortgage-like crowdsourced DeFi loan with gradual installments.</p>
-        <div class="grid grid-cols-5 gap-3 mb-4">
+    <div class="border p-3 sm:p-4 order-2 lg:order-none">
+        <h3 class="text-lg sm:text-xl font-heading">Crowdsourced DeFi mortgage - terms</h3>
+        <p class="text-gray-2 text-base sm:text-lg mt-1 mb-4">Crypto-backed mortgage-like crowdsourced DeFi loan with gradual installments.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
             <div v-for="item in TERMS_ITEMS" :key="item.label" class="border p-3">
                 <div class="text-sm text-gray">{{ item.label }}</div>
                 <div v-if="item.label === PROPOSAL_DURATION_LABEL">
-                    <DeadlineCountdown class="text-2xl font-semibold" />
+                    <DeadlineCountdown class="text-lg sm:text-xl md:text-2xl font-semibold" />
                 </div>
                 <div 
                     v-else 
-                    class="text-2xl font-semibold flex items-center gap-2">
+                    class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-2">
                     <span>{{ item.value }}</span>
                     <template v-if="isCollateralOrCreditNameItem(item.label)">
                         <a :href="getExplorerTokenAddressLink(item.address!)" target="_blank" class="cursor-pointer group">
