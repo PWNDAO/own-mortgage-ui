@@ -1,10 +1,6 @@
 <template>
   <div>
       <div class="text-center pt-2 pb-10">
-          <div class="flex justify-end gap-2 mb-6">
-            <NotificationSignupModal />
-            <ShareModal />
-          </div>
           <h1 class="text-5xl font-beon">
               <span class="text-bordel-green">BORDEL</span> HACKERSPACE
           </h1>
@@ -29,5 +25,4 @@
 </template>
 
 <script setup lang="ts">
-import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue'
 </script>

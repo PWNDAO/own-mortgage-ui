@@ -4,7 +4,7 @@
           <Button variant="outline">
               <div class="flex items-center gap-2">
                   <img :src="`/icons/share.svg`" alt="Share" class="w-4 h-4" />
-                  <span>Share This Proposal</span>
+                  <span class="text-sm">Share</span>
               </div>
           </Button>
       </DialogTrigger>

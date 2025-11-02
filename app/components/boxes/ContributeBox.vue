@@ -1,7 +1,8 @@
 <template>
     <div class="border p-4">
-        <div class="flex justify-between">
-            <h3 class="font-heading text-xl mb-4">Contribute to the crowdloan</h3>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-heading text-xl">Contribute to the crowdloan</h3>
+            <ShareModal />
         </div>
         <hr class="mb-4"/>
         <div class="mb-3">
@@ -10,13 +11,22 @@
                 Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdraw }} {{ CREDIT_NAME }} from your deposit.
             </div>
 
-            <div class="mt-3 p-3 border">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-300">APR:</span>
-                    <span class="text-lg font-semibold text-green-400">{{ MINIMAL_APR }}%</span>
+            <div class="flex gap-2 mt-3">
+                <div class="p-3 border grow">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-300">APR:</span>
+                        <span class="text-lg font-semibold text-green-400">{{ MINIMAL_APR }}%</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        You also earn interest while waiting for loan acceptance
+                    </div>
                 </div>
-                <div class="text-xs text-gray-400 mt-1">
-                    You also earn interest while waiting for loan acceptance
+
+                <div class="p-3 border flex gap-5">
+                    <span class="text-gray-300">Chain:</span>
+                    <div>
+                        <ChainInfo />
+                    </div>
                 </div>
             </div>
             
@@ -115,19 +125,8 @@ const walletBalancePlusUserDeposit = computed(() => {
     return (walletBalance.value ?? 0n) + (userDeposit.value ?? 0n)
 })
 
-// TODO remove this + other console logs
-setInterval(() => {
-    console.log('isApproving.value', isApproving.value)
-    console.log('isDepositing.value', isDepositing.value)
-    console.log('isWithdrawing.value', isWithdrawing.value)
-    console.log('walletBalance.value', walletBalance.value)
-    console.log('amountToDepositAdditionally.value', amountToDepositAdditionally.value)
-    console.log('lendAmount.value', lendAmount.value)
-    console.log('walletBalancePlusUserDeposit.value', walletBalancePlusUserDeposit.value)
-}, 5000)
-
 const canSubmit = computed(() => {
-    if (isApproving.value || isDepositing.value || isWithdrawing.value) {
+    if (isApproving.value || isDepositing.value || isWithdrawing.value || lendAmount.value === '') {
         return false
     }
 
@@ -135,13 +134,9 @@ const canSubmit = computed(() => {
         return true
     }
 
-    console.log('asdasddasd')
-
     if (!walletBalance.value) {
         return false
     }
-
-    console.log('blabla')
 
     if (amountToDepositAdditionally.value === 0) {
         return false
@@ -151,8 +146,6 @@ const canSubmit = computed(() => {
         return true
     }
 
-    console.log('blabla2')
-
     const amountStr = lendAmount.value || '0'
     if (amountStr === '0' || amountStr === '') {
         return false
@@ -160,8 +153,6 @@ const canSubmit = computed(() => {
     
     try {
         const amount = parseUnits(amountStr, CREDIT_DECIMALS)
-        console.log('amount', amount)
-        console.log('walletBalancePlusUserDeposit.value', walletBalancePlusUserDeposit.value)
         return amount > 0n && amount <= walletBalancePlusUserDeposit.value
     } catch {
         console.error('error parsing amount', amountStr)
@@ -216,8 +207,6 @@ const handleDepositClick = async () => {
 
   const actionId = TOAST_ACTION_ID_TO_UNIQUE_ID_FN[ToastActionEnum.DEPOSIT](lendAmount.value, address.value!)
 
-  console.log('actionId', actionId)
-  console.log('toast.value?.id', toast.value?.id)
   if (toast.value?.id !== actionId) {
     const steps: ToastStep[] = []
     if (!isAmountInputLowerThanUserDeposit.value) {

@@ -1,5 +1,23 @@
 <template>
-    <Line :data="data" :options="options" />
+    <div>
+        <div class="mb-4">
+            <p class="mb-2">
+                This graph illustrates the loan repayment dynamics and default risk over time.
+            </p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>
+                    <span class="font-semibold">Liquidation Threshold</span> (dashed blue line): The maximum debt allowed at any point in time. If the debt exceeds this line, the loan may be liquidated.
+                </li>
+                <li>
+                    <span class="font-semibold">Minimal Repayment Path</span> (solid green line): Shows the cumulative amount repaid over time if the borrower makes minimal required repayments to avoid default. This line starts at 0 and increases as payments are made.
+                </li>
+            </ul>
+            <p class="mt-2 text-xs italic text-gray-2">
+                During the grace period (first {{ POSTPONEMENT_IN_MONTHS }} months), no repayments are required. After this period, repayments must be made to keep the debt below the liquidation threshold.
+            </p>
+        </div>
+        <Line :data="data" :options="options" />
+    </div>
 </template>
   
 <script setup lang="ts">
@@ -31,6 +49,18 @@ const limitData = labels.map((_, month) => {
   }
 })
 
+// Build minimal repayment line (cumulative repayments - starts at 0)
+const repaymentData = labels.map((_, month) => {
+  if (month <= POSTPONEMENT_IN_MONTHS) {
+    return 0 // no repayments during grace period
+  } else {
+    const remainingMonths = LOAN_DURATION_IN_MONTHS - POSTPONEMENT_IN_MONTHS
+    const monthsIntoRepayment = month - POSTPONEMENT_IN_MONTHS
+    const monthlyPayment = TOTAL_AMOUNT_TO_REPAY / remainingMonths
+    return monthlyPayment * monthsIntoRepayment // cumulative amount repaid
+  }
+})
+
 const data = {
   labels,
   datasets: [
@@ -44,6 +74,17 @@ const data = {
       tension: 0,      // straight line
       pointRadius: 0,  // <-- disables points
       hoverRadius: 5,  // radius when hovering
+    },
+    {
+      label: 'Minimal Repayment Path',
+      data: repaymentData,
+      borderColor: '#10b981',
+      borderDash: [],
+      borderWidth: 2,
+      fill: false,
+      tension: 0,      // straight line segments
+      pointRadius: 0,  // <-- disables points
+      hoverRadius: 5,  // radius when hovering
     }
   ]
 }
@@ -52,20 +93,20 @@ const options = {
   responsive: true,
   plugins: {
     tooltip: {
-      mode: 'nearest',     // tooltip triggers on nearest point
+      mode: 'nearest' as const,     // tooltip triggers on nearest point
       intersect: false     // allow tooltip even if cursor is not exactly on the line
     }
   },
   interaction: {
-    mode: 'nearest',      // same as tooltip
+    mode: 'nearest' as const,      // same as tooltip
     intersect: false,     // important to trigger on nearby
-    axis: 'x'             // only consider horizontal distance
+    axis: 'x' as const             // only consider horizontal distance
   },
   scales: {
     y: {
       title: {
         display: true,
-        text: `Debt (${CREDIT_NAME})`
+        text: `Amount (${CREDIT_NAME})`
       },
       beginAtZero: true
     },

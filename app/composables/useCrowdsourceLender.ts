@@ -178,9 +178,6 @@ const mergeBalances = (
     }
   }
 
-  console.log('cachedBalances')
-  console.log(cachedBalances)
-
   // Calculate changes from new events
   const balanceChanges = calculateLenderBalances(newEvents)
 
@@ -210,8 +207,6 @@ export const loadCrowdsourceLenders = async (forceRefresh: boolean = false) => {
     
     // Fetch new transfer events
     const events = await fetchAllTransferEvents(fromDate)
-    console.log('events')
-    console.log(events)
     
     if (events.length === 0 && !forceRefresh) {
       // No new events and not forcing refresh, keep existing cache
@@ -226,11 +221,7 @@ export const loadCrowdsourceLenders = async (forceRefresh: boolean = false) => {
     } else {
       // Full refresh: calculate all balances from all events
       const allEvents = await fetchAllTransferEvents() // Fetch all events for full refresh
-      console.log('allEvents')
-      console.log(allEvents)
       const balances = calculateLenderBalances(allEvents)
-      console.log('balances')
-      console.log(balances)
       mergedLenders = balancesToLenders(balances)
     }
 
@@ -268,10 +259,7 @@ export const useCrowdsourceLender = () => {
     error.value = null
 
     try {
-      console.log('start')
       const result = await loadCrowdsourceLenders(forceRefresh)
-      console.log('result')
-      console.log(result)
       lenders.value = result
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load crowdsource lenders'
@@ -287,7 +275,6 @@ export const useCrowdsourceLender = () => {
   // TODO is this fine?
   // Auto-load on mount
   onMounted(() => {
-    console.log('onMounted')
     loadLenders()
   })
 

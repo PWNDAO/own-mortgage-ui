@@ -53,15 +53,31 @@
                 </div>
             </div>
         </div>
+
+        <div class="text-gray-2 mt-4 pl-1 italic">
+            Note: Not sure how to claim rewards? 
+            <button 
+                class="text-blue-400 hover:text-blue-300 underline cursor-pointer"
+                @click="notificationModalRef?.openModal()"
+            >
+                Subscribe
+            </button>
+            to our updates or contact info@bordel.wtf
+        </div>
     </div>
+    <NotificationSignupModal ref="notificationModalRef" :display-open-button="false" />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { CREDIT_NAME } from '~/constants/proposalConstants';
 import useAmountInputStore from '~/composables/useAmountInputStore';
+import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue';
 
 const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
+
+const notificationModalRef = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
 const isAmountInputFilled = computed(() => {
     return lendAmount.value && lendAmount.value.trim() !== ''

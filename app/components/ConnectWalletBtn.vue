@@ -1,7 +1,7 @@
 <template>
-  <Button class="text-xs flex items-center gap-2" variant="outline" @click="handleConnectClick">
+  <Button class="flex items-center gap-2" variant="outline" @click="handleConnectClick">
     <WalletIcon color="var(--color-foreground)" class="mt-[1px]"/>
-    <span>{{ buttonText }}</span>
+    <span class="text-xs">{{ buttonText }}</span>
   </Button>
 </template>
 

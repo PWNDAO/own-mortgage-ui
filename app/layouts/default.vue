@@ -1,8 +1,9 @@
 <template>
-  <div>
+  <div class="p-4 mx-auto max-w-[1440px]">
     <TheHeader />
-    <main class="p-4 mx-auto max-w-[1440px]">
+    <main>
       <slot />
     </main>
+    <TheFooter />
   </div>
 </template>

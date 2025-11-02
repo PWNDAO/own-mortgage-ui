@@ -25,22 +25,17 @@ export default function useActionFlow(toast: Ref<Toast>) {
     const toastsStore = useToastsStore()
     // Ensure the toast is displayed
     let displayedToast = toastsStore.getToast(toast.value.id)
-    console.log('displayedToast', displayedToast)
     if (!displayedToast) {
       toastsStore.displayToast(toast.value)
       displayedToast = toastsStore.getToast(toast.value.id)!
-      console.log('toast.value.id', toast.value.id)
-      console.log('displayedToast', displayedToast)
     }
 
     // Use a while loop to always get the latest displayedToast and process unprocessed steps
     while (true) {
       const currentToast = toastsStore.getToast(toast.value.id)
-      console.log('currentToast', currentToast)
       if (!currentToast) break
 
       const stepIndex = currentToast.stepToPerform
-      console.log('stepIndex', stepIndex)
       if (stepIndex >= currentToast.steps.length) break
 
       const step = currentToast.steps[stepIndex]!

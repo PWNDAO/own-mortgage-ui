@@ -54,7 +54,7 @@ const TERMS_ITEMS = [
         value: `${LOAN_LTV / 100}%`,
     },
     {
-        label: 'Loan Duration',
+        label: 'Duration',
         value: `${LOAN_DURATION_IN_YEARS}y`,
     },
     {
