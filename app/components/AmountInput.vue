@@ -44,9 +44,6 @@ import { formatDecimalPoint } from '~/lib/format-decimals'
 import { useIsMutating } from '@tanstack/vue-query'
 import MutationIds from '~/constants/mutationIds'
 
-// TODO make sure that the calculations are correct, including usage of the decimal.js
-//  and make sure there are not rounding errors...
-
 const { missingAmount } = useProposal()
 
 const { userDeposit, userDepositFormatted } = useUserDeposit()

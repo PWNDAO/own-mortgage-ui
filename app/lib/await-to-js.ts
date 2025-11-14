@@ -11,10 +11,8 @@ export function to<T, U extends Error = Error> (
   { additionalErrorInfo = {}, enableLogging = true }: ErrorConfig = { additionalErrorInfo: {}, enableLogging: true },
 ): Promise<[U, undefined] | [null, T]> {
   return promise
-  // TODO instead of `null` return `undefined`?
     .then<[null, T]>((data: T) => [null, data])
     .catch<[U, undefined]>((err: U) => {
-      // TODO is this AbortError correct?
       if (enableLogging && err.name !== 'AbortError') {
         console.error('Error in await-to-js:')
         console.error(err)

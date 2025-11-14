@@ -127,7 +127,7 @@
   --negative: #f97600;
 }
 
-/* TODO do we need this separate .dark styles / theme? */
+/* note: we most likely don't need these dark styles as we are not using them, but keeping them here for now */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

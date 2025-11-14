@@ -336,7 +336,6 @@ export const useCrowdsourceLender = () => {
   // Computed properties
   const totalLenders = computed(() => lenders.value.length)
 
-  // TODO is this fine?
   // Auto-load on mount
   onMounted(() => {
     loadLenders()

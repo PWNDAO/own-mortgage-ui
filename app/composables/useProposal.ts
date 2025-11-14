@@ -12,11 +12,11 @@ export default function useProposal() {
         // note: totalAssets returns amount of all deposited assets in credit asset... totalSupply returns amount of shares
         functionName: 'totalAssets',
     })
-    const totalDepositedAssets = computed(() => totalDepositedAssetsQuery.data.value)
-    const totalDepositedAssetsFormatted = computed(() => totalDepositedAssets.value ? formatUnits(totalDepositedAssets.value, CREDIT_DECIMALS) : '0')
+    const totalDepositedAssets = computed<bigint>(() => totalDepositedAssetsQuery.data.value ?? 0n)
+    const totalDepositedAssetsFormatted = computed<string>(() => totalDepositedAssets.value ? formatUnits(totalDepositedAssets.value, CREDIT_DECIMALS) : '0')
 
     const missingAmount = computed<bigint>(() => {
-        return MAX_AMOUNT - (totalDepositedAssets.value ?? 0n)
+        return MAX_AMOUNT - totalDepositedAssets.value
     })
 
     return {

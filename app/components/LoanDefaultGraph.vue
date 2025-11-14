@@ -22,6 +22,7 @@
 </template>
   
 <script setup lang="ts">
+import Decimal from "decimal.js";
 import {
   Chart as ChartJS,
   Title,
@@ -48,8 +49,8 @@ const repaymentData = labels.map((_, month) => {
   } else {
     const remainingMonths = LOAN_DURATION_IN_MONTHS - POSTPONEMENT_IN_MONTHS
     const monthsIntoRepayment = month - POSTPONEMENT_IN_MONTHS
-    const monthlyPayment = TOTAL_AMOUNT_TO_REPAY / remainingMonths
-    return monthlyPayment * monthsIntoRepayment // cumulative amount repaid
+    const monthlyPayment = TOTAL_AMOUNT_TO_REPAY.div(new Decimal(remainingMonths))
+    return monthlyPayment.mul(new Decimal(monthsIntoRepayment)) // cumulative amount repaid
   }
 })
 

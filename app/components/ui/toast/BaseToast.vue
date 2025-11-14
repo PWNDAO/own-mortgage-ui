@@ -88,7 +88,6 @@ interface Props {
 const props = defineProps<Props>()
 const { toastId } = toRefs(props)
 
-// TODO check if this really works
 const emit = defineEmits<{(e: 'close-toast'): void}>()
 
 const toastsStore = useToastsStore()

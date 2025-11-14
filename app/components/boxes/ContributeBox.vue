@@ -178,8 +178,7 @@ const { isPending: isWithdrawing, mutateAsync: withdrawMutateAsync } = useMutati
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await withdraw(parseUnits(amountToWithdraw.value.toString(), CREDIT_DECIMALS), step)
     },
-    onSuccess(data, variables, context) {
-        console.log('withdraw success', data, variables, context)
+    onSuccess() {
         refetchTotalDepositedAssets()
     },
     throwOnError: true,
@@ -190,9 +189,7 @@ const { isPending: isDepositing, mutateAsync: depositMutateAsync } = useMutation
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await deposit(step)
     },
-    onSuccess(data, variables, context) {
-        // TODO remove debug logs from all codebase
-        console.log('deposit success', data, variables, context)
+    onSuccess() {
         refetchTotalDepositedAssets()
 
         notificationModal.value?.openModal()
@@ -214,7 +211,6 @@ const handleDepositClick = async () => {
         steps.push(new ToastStep({
             text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
             async fn(step) {
-                console.log('approving', step)
                 await approveForDepositIfNeededMutateAsync({ step })
                 return true
             }
@@ -225,7 +221,6 @@ const handleDepositClick = async () => {
         steps.push(new ToastStep({
             text: `Withdrawing ${amountToWithdraw.value} ${CREDIT_NAME}...`,
             async fn(step) {
-                console.log('withdrawing', step)
                 await withdrawMutateAsync({ step })
                 return true
             }
@@ -234,7 +229,6 @@ const handleDepositClick = async () => {
         steps.push(new ToastStep({
             text: `Depositing ${lendAmount.value} ${CREDIT_NAME}...`,
             async fn(step) {
-                console.log('depositing', step)
                 await depositMutateAsync({ step })
                 return true
             },

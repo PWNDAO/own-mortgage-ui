@@ -1,6 +1,7 @@
-import { formatUnits, parseUnits, type Address } from "viem"
+import { parseUnits, type Address } from "viem"
 import { proposal } from "@/lib/decode-proposal"
 import { sepolia } from "@reown/appkit/networks";
+import Decimal from "decimal.js";
 
 // note: for getting the proposal data, see code in decode-proposal.ts and then update the values here
 
@@ -22,10 +23,8 @@ export const MINIMAL_CREDIT_AMOUNT = proposal.minCreditAmount
 export const PROPOSAL_CHAIN = sepolia
 export const PROPOSAL_CHAIN_ID = sepolia.id
 // export const CREDIT_DECIMALS = 6
-// export const CREDIT_DECIMALS = 18
 export const CREDIT_DECIMALS = 2
 // export const CREDIT_NAME = 'USDC'
-// export const CREDIT_NAME = 'LINK'
 export const CREDIT_NAME = 'EURS'
 //export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
 export const CREDIT_ASSET_ICON = '/icons/eurs.svg'
@@ -34,16 +33,18 @@ export const COLLATERAL_NAME = 'WETH'
 export const COLLATERAL_ASSET_ICON = '/icons/chain/ethereum.svg'
 
 // note: the max amount will be only enforced on frontend
-export const MAX_AMOUNT: bigint = parseUnits('20000', CREDIT_DECIMALS)
-export const MAX_AMOUNT_FORMATTED: string = formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)
+export const MAX_AMOUNT_FORMATTED = '20000';
+export const MAX_AMOUNT: bigint = parseUnits(MAX_AMOUNT_FORMATTED, CREDIT_DECIMALS)
 
-// TODO should we implement some kind of decimal.js or other package for high precision calculations?
-// TODO check that this calculation is correct
-export const TOTAL_AMOUNT_TO_REPAY = Number(MAX_AMOUNT_FORMATTED) * (1 + (LOAN_APY / 10000) * LOAN_DURATION_IN_YEARS);
+export const TOTAL_AMOUNT_TO_REPAY = new Decimal(MAX_AMOUNT_FORMATTED)
+  .mul(
+    new Decimal(1).add(
+      new Decimal(LOAN_APY).div(10000).mul(LOAN_DURATION_IN_YEARS)
+    )
+  );
 
-// TODO move all calculations to decimal.js
 // TODO uncomment this one and remove the hardcoded value below this one
 // export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE = new Decimal(formatUnits(MINIMAL_CREDIT_AMOUNT, CREDIT_DECIMALS)).div(formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)).toDecimalPlaces(2, Decimal.ROUND_FLOOR).toString()
 export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE = '0.6';
 
-export const MINIMAL_APR = 2.5
+export const MINIMAL_APR = 2.5 // used only for displaying purposes

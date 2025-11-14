@@ -32,7 +32,7 @@ export enum ToastStepStatus {
 export class ToastStep {
   text: string
   error?: Error
-  fn: (step: ToastStep) => Promise<boolean> // TODO can also throw exception, update typings
+  fn: (step: ToastStep) => Promise<boolean> // can also throw exception
   status: ToastStepStatus
   txHash?: Hex
   isRunningLong?: boolean
@@ -41,7 +41,7 @@ export class ToastStep {
     this.text = step.text
     this.error = step.error
     this.fn = step.fn
-    this.status = step.status || ToastStepStatus.INACTIVE // TODO does this default makes sense?
+    this.status = step.status || ToastStepStatus.INACTIVE
     this.txHash = step.txHash
     this.isRunningLong = step.isRunningLong ?? false
   }
@@ -60,7 +60,6 @@ interface CreateToast {
 }
 
 export class Toast<ToastAction extends ToastActionId = ToastActionId> {
-  // TODO is this enough for unique representation of id?
   id: string
   steps: ToastStep[]
   chainId: typeof PROPOSAL_CHAIN_ID | undefined

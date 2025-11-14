@@ -59,7 +59,6 @@ import { useAccount } from '@wagmi/vue';
 import { formatUnits } from 'viem';
 import { Skeleton } from '~/components/ui/skeleton';
 
-// TODO remove later on, this is just for testing
 const { lenders, totalLenders, isLoading } = useCrowdsourceLender()
 
 const { isConnected } = useAccount()
