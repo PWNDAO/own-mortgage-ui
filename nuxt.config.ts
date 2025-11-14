@@ -24,7 +24,6 @@ export default defineNuxtConfig({
       { path: "~/components/ui", pathPrefix: false }, 
       { path: "~/components/boxes", pathPrefix: false }, 
       { path: "~/components/modals", pathPrefix: false }, 
-      { path: "~/components/tables", pathPrefix: false }, 
       { path: "~/components/icons", pathPrefix: false }
     ],
   },

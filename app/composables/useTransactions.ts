@@ -1,5 +1,5 @@
 import to from '@/lib/await-to-js'
-import type { Abi, Address, ContractFunctionArgs, ContractFunctionName, TransactionReceipt } from 'viem'
+import type { Abi, ContractFunctionArgs, ContractFunctionName, TransactionReceipt } from 'viem'
 // TODO is it fine to import from @wagmi/core/actions instead of @wagmi/vue/actions?
 import { getAccount, getBlockNumber, getPublicClient, getTransaction, getTransactionReceipt, switchChain, waitForTransactionReceipt, watchContractEvent, writeContract } from '@wagmi/core/actions'
 import type { WriteContractVariables } from '@wagmi/core/query'
@@ -20,22 +20,6 @@ export interface SendTransactionHooks {
 export interface SendTransactionOptions {
   hooks?: SendTransactionHooks
   step?: ToastStep
-}
-
-export async function getSafeWalletThreshold(safeAddress: Address, chainId: number) {
-  const publicClient = getPublicClient(wagmiConfig, { chainId })
-
-  if (!publicClient) {
-    throw new Error('Public client not found')
-  }
-
-  const threshold = await publicClient.readContract({
-    address: safeAddress,
-    abi: SAFE_WALLET_ABI,
-    functionName: 'getThreshold',
-  })
-
-  return Number(threshold)
 }
 
 // TODO change type of transaction parameter to always have chainId filled, right now it's marked as optional
@@ -62,8 +46,6 @@ export async function sendTransaction<
     }
   }
 
-  const { address: userAddress } = getAccount(wagmiConfig)
-
   // note: if signing with a Safe{Wallet}, the txHash is safeTxHash and not the real txHash
   const [writeTxError, txHash] = await to(writeContract(wagmiConfig, transaction))
   if (writeTxError || !txHash) {
@@ -78,18 +60,11 @@ export async function sendTransaction<
     hooks.onWriteContractSuccess()
   }
 
-  let threshold: number | undefined
-  if (useConnectedAccountTypeStore().isConnectedContractWallet && userAddress) {
-    // TODO do we need to call this here, or just get the value from useConnectedAccountTypeStore?
-    threshold = await getSafeWalletThreshold(userAddress, transaction.chainId!)
-    console.log('multisig threshold', threshold)
-  }
-
-  // if threshold is truthy, it means we are signing with a Safe{Wallet} in which case the
+  // if safeThreshold is truthy, it means we are signing with a Safe{Wallet} in which case the
   //  txHash is safeTxHash and not the real txHash
   // in the following block, if we passed `step`, we are checking here if the txHash exists
   //  and if yes, we assign it to the step.txHash
-  if (step && !threshold) {
+  if (step && !useConnectedAccountTypeStore().safeThreshold) {
     try {
       await getTransaction(wagmiConfig, {
         hash: txHash,

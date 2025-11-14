@@ -28,7 +28,6 @@ export const CREDIT_DECIMALS = 2
 // export const CREDIT_NAME = 'LINK'
 export const CREDIT_NAME = 'EURS'
 //export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
-// export const CREDIT_ASSET_ICON = '/icons/link.svg'
 export const CREDIT_ASSET_ICON = '/icons/eurs.svg'
 export const COLLATERAL_NAME = 'WETH'
 
