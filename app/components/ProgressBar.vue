@@ -3,7 +3,7 @@
     <div class="relative border p-2">
         <div class="absolute inset-0 bg-gradient-to-r from-background to-primary-darker transition-all duration-300 ease-out" :style="{ width: `${progress}%` }"/>
         <div class="flex justify-center items-center gap-2 text-center relative font-semibold text-3xl transition-colors duration-300" :class="{ 'text-primary-foreground': isHighlighting }">
-            <span>{{ totalSupplyFormattedDecimals }} / {{ maxAmountFormattedDecimals }}</span>
+            <span>{{ totalDepositedAssetsFormattedDecimals }} / {{ maxAmountFormattedDecimals }}</span>
             <img width="24" height="24" :src="CREDIT_ASSET_ICON" :alt="CREDIT_NAME" />
             <span> {{ CREDIT_NAME }}</span>
         </div>
@@ -20,19 +20,19 @@
 <script setup lang="ts">
 import { CREDIT_NAME, MAX_AMOUNT_FORMATTED, CREDIT_ASSET_ICON, MINIMAL_CREDIT_AMOUNT_PERCENTAGE } from '~/constants/proposalConstants'
 
-const { totalSupply, totalSupplyFormatted } = useProposal()
+const { totalDepositedAssets, totalDepositedAssetsFormatted } = useProposal()
 
 const MINIMAL_CREDIT_AMOUNT_PERCENTAGE_FORMATTED = Number(MINIMAL_CREDIT_AMOUNT_PERCENTAGE) * 100
 
-const totalSupplyFormattedDecimals = computed(() => {
-    return Math.floor(Number(totalSupplyFormatted.value)).toLocaleString()
+const totalDepositedAssetsFormattedDecimals = computed(() => {
+    return Math.floor(Number(totalDepositedAssetsFormatted.value)).toLocaleString()
 })
 
 const maxAmountFormattedDecimals = computed(() => Number(MAX_AMOUNT_FORMATTED).toLocaleString())
 
 // Calculate progress percentage
 const progress = computed(() => {
-    const percentage = (Number(totalSupplyFormatted.value) / Number(MAX_AMOUNT_FORMATTED)) * 100
+    const percentage = (Number(totalDepositedAssetsFormatted.value) / Number(MAX_AMOUNT_FORMATTED)) * 100
     if (percentage > 100) {
         return 100
     }
@@ -41,11 +41,11 @@ const progress = computed(() => {
 
 // Animation for value changes
 const isHighlighting = ref(false)
-const previousTotal = ref(totalSupply.value ?? 0n)
+const previousTotal = ref(totalDepositedAssets.value ?? 0n)
 
 // TODO remove?
 // Watch for changes in the total to trigger highlighting
-watch(totalSupply, (newValue) => {
+watch(totalDepositedAssets, (newValue) => {
     if (newValue && newValue > previousTotal.value) {
         isHighlighting.value = true
         setTimeout(() => {

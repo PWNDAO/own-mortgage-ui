@@ -1,8 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import Decimal from "decimal.js"
 
-// TODO what from the dependencies in package.json we can uninstall?
-
 // Configure Decimal.js to use normal notation instead of scientific notation
 Decimal.config({ toExpPos: 9000000000000000 })
 Decimal.config({ toExpNeg: -9000000000000000 })

@@ -1,6 +1,10 @@
 import { useLocalStorage } from "@vueuse/core"
 import { getAddress } from "viem"
 import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from '~/constants/addresses'
+import { readContracts } from "@wagmi/core/actions"
+import { wagmiConfig } from '~/config/appkit'
+import { PROPOSAL_CHAIN_ID, CREDIT_DECIMALS } from '~/constants/proposalConstants'
+import PWN_CROWDSOURCE_LENDER_VAULT_ABI from '~/assets/abis/v1.5/PWNCrowdsourceLenderVault'
 
 // Types for Moralis API response
 interface MoralisTransferEvent {
@@ -46,6 +50,7 @@ interface CrowdsourceLender {
 const MORALIS_BASE_URL = 'https://deep-index.moralis.io/api/v2.2'
 const CHAIN = 'sepolia'
 
+// TODO does this caching makes sense? or shall we turn this to tanstack query?
 // Local storage for caching
 const lastFetchTimestamp = useLocalStorage<null | string>('crowdsource_lender_last_fetch_timestamp', null)
 const crowdsourceLendersCache = useLocalStorage<null | CrowdsourceLender[]>('crowdsource_lenders_cache', null)
@@ -108,12 +113,21 @@ const fetchAllTransferEvents = async (fromDate?: string): Promise<MoralisTransfe
   return allEvents
 }
 
+// Round balance to nearest integer (rounds to nearest 10^CREDIT_DECIMALS)
+const roundToNearestInteger = (balance: bigint): bigint => {
+  const decimals = BigInt(CREDIT_DECIMALS)
+  const decimalUnit = 10n ** decimals
+  const half = decimalUnit / 2n
+  // Round to nearest integer: (balance + half) / decimalUnit * decimalUnit
+  return ((balance + half) / decimalUnit) * decimalUnit
+}
+
 // Convert balances to lender array
 const balancesToLenders = (balances: Record<string, bigint>): CrowdsourceLender[] => {
   return Object.entries(balances)
     .map(([address, balance]) => ({
       address,
-      balance
+      balance: roundToNearestInteger(balance) // Round to nearest integer
     }))
     .sort((a, b) => {
       // Sort by balance descending
@@ -124,11 +138,61 @@ const balancesToLenders = (balances: Record<string, bigint>): CrowdsourceLender[
 }
 
 // Calculate lender balances from transfer events
-const calculateLenderBalances = (events: MoralisTransferEvent[]): Record<string, bigint> => {
+// Converts shares to assets using convertToAssets contract function
+const calculateLenderBalances = async (events: MoralisTransferEvent[]): Promise<Record<string, bigint>> => {
   const balances: Record<string, bigint> = {}
-
-  for (const event of events) {
+  
+  // Convert shares to assets in batches of 25
+  const BATCH_SIZE = 25
+  const shareValues: bigint[] = []
+  const eventIndices: number[] = []
+  
+  // Collect all share values and their indices
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]
+    if (!event) continue
     const value = BigInt(event.value)
+    shareValues.push(value)
+    eventIndices.push(i)
+  }
+  
+  // Process in batches
+  const assetValues: bigint[] = new Array(events.length).fill(0n)
+  
+  for (let i = 0; i < shareValues.length; i += BATCH_SIZE) {
+    const batch = shareValues.slice(i, i + BATCH_SIZE)
+    const batchIndices = eventIndices.slice(i, i + BATCH_SIZE)
+    
+    // Create contracts array for this batch
+    const contracts = batch.map((shares) => ({
+      abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+      address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+      functionName: 'convertToAssets' as const,
+      args: [shares] as const,
+      chainId: PROPOSAL_CHAIN_ID,
+    }))
+    
+    // Call convertToAssets for the batch
+    const results = await readContracts(wagmiConfig, {
+      contracts,
+      allowFailure: false,
+    })
+    
+    // Store the converted asset values
+    for (let j = 0; j < batch.length; j++) {
+      const eventIndex = batchIndices[j]
+      const result = results[j]
+      if (eventIndex !== undefined && result !== undefined) {
+        assetValues[eventIndex] = result as bigint
+      }
+    }
+  }
+
+  // Now process events with asset values instead of share values
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]
+    if (!event) continue
+    const value = assetValues[i] ?? 0n // Use converted asset value instead of share value
     const fromAddress = getAddress(event.from_address)
     const toAddress = getAddress(event.to_address)
 
@@ -166,10 +230,10 @@ const calculateLenderBalances = (events: MoralisTransferEvent[]): Record<string,
 }
 
 // Merge cached balances with new transfer events
-const mergeBalances = (
+const mergeBalances = async (
   cachedLenders: CrowdsourceLender[] | null,
   newEvents: MoralisTransferEvent[]
-): CrowdsourceLender[] => {
+): Promise<CrowdsourceLender[]> => {
   // Convert cached lenders to balance map
   const cachedBalances: Record<string, bigint> = {}
   if (cachedLenders) {
@@ -179,7 +243,7 @@ const mergeBalances = (
   }
 
   // Calculate changes from new events
-  const balanceChanges = calculateLenderBalances(newEvents)
+  const balanceChanges = await calculateLenderBalances(newEvents)
 
   // Merge cached balances with new changes
   const mergedBalances: Record<string, bigint> = { ...cachedBalances }
@@ -217,11 +281,11 @@ export const loadCrowdsourceLenders = async (forceRefresh: boolean = false) => {
 
     if (fromDate && crowdsourceLendersCache.value && !forceRefresh) {
       // Incremental update: merge cached data with new events
-      mergedLenders = mergeBalances(crowdsourceLendersCache.value, events)
+      mergedLenders = await mergeBalances(crowdsourceLendersCache.value, events)
     } else {
       // Full refresh: calculate all balances from all events
       const allEvents = await fetchAllTransferEvents() // Fetch all events for full refresh
-      const balances = calculateLenderBalances(allEvents)
+      const balances = await calculateLenderBalances(allEvents)
       mergedLenders = balancesToLenders(balances)
     }
 

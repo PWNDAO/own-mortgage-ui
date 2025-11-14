@@ -73,7 +73,7 @@ const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
 const { address, isConnected } = useAccount()
 
-const { refetchTotalSupply } = useProposal()
+const { refetchTotalDepositedAssets } = useProposal()
 
 const { open } = useAppKit();
 
@@ -180,7 +180,7 @@ const { isPending: isWithdrawing, mutateAsync: withdrawMutateAsync } = useMutati
     },
     onSuccess(data, variables, context) {
         console.log('withdraw success', data, variables, context)
-        refetchTotalSupply()
+        refetchTotalDepositedAssets()
     },
     throwOnError: true,
 })
@@ -191,8 +191,9 @@ const { isPending: isDepositing, mutateAsync: depositMutateAsync } = useMutation
         await deposit(step)
     },
     onSuccess(data, variables, context) {
+        // TODO remove debug logs from all codebase
         console.log('deposit success', data, variables, context)
-        refetchTotalSupply()
+        refetchTotalDepositedAssets()
 
         notificationModal.value?.openModal()
     },

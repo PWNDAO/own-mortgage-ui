@@ -6,23 +6,23 @@ import { useReadContract } from "@wagmi/vue"
 
 export default function useProposal() {
 
-    const totalSupplyQuery = useReadContract({
+    const totalDepositedAssetsQuery = useReadContract({
         abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
         address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
-        // TODO totalSupply or totalAssets?
+        // note: totalAssets returns amount of all deposited assets in credit asset... totalSupply returns amount of shares
         functionName: 'totalAssets',
     })
-    const totalSupply = computed(() => totalSupplyQuery.data.value)
-    const totalSupplyFormatted = computed(() => totalSupply.value ? formatUnits(totalSupply.value, CREDIT_DECIMALS) : '0')
+    const totalDepositedAssets = computed(() => totalDepositedAssetsQuery.data.value)
+    const totalDepositedAssetsFormatted = computed(() => totalDepositedAssets.value ? formatUnits(totalDepositedAssets.value, CREDIT_DECIMALS) : '0')
 
     const missingAmount = computed<bigint>(() => {
-        return MAX_AMOUNT - (totalSupply.value ?? 0n)
+        return MAX_AMOUNT - (totalDepositedAssets.value ?? 0n)
     })
 
     return {
         missingAmount,
-        totalSupply,
-        totalSupplyFormatted,
-        refetchTotalSupply: totalSupplyQuery.refetch,
+        totalDepositedAssets,
+        totalDepositedAssetsFormatted,
+        refetchTotalDepositedAssets: totalDepositedAssetsQuery.refetch,
     }
 }

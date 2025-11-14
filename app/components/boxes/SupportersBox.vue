@@ -18,23 +18,35 @@
 
 
         <div class="overflow-y-auto max-h-72 md:max-h-48">
-            <div 
-                v-for="lender in lenders" 
-                :key="lender.address" 
-                class="flex justify-between items-center py-1 text-xs sm:text-sm gap-2"
-            >
-                <span 
-                    class="max-w-[40%] sm:max-w-44 md:max-w-36 overflow-hidden text-ellipsis whitespace-nowrap" 
-                    :title="lender.address"
+            <template v-if="isLoading && !lenders?.length">
+                <div v-for="i in 5" :key="i" class="py-1">
+                    <Skeleton class="h-4 w-full" />
+                </div>
+            </template>
+            <template v-else>
+                <div 
+                    v-for="lender in lenders" 
+                    :key="lender.address" 
+                    class="flex justify-between items-center py-1 text-xs sm:text-sm gap-2"
                 >
-                    {{ formatAddress(lender.address) }}
-                </span>
-                <span 
-                    class="font-bold transition-colors duration-300 text-right flex-shrink-0"
-                >
-                    {{ formatAmount(lender.balance) }} {{ CREDIT_NAME }}
-                </span>
-            </div>
+                    <span 
+                        class="max-w-[40%] sm:max-w-44 md:max-w-36 overflow-hidden text-ellipsis whitespace-nowrap" 
+                        :title="lender.address"
+                    >
+                        {{ formatAddress(lender.address) }}
+                    </span>
+                    <span 
+                        class="font-bold transition-colors duration-300 text-right flex-shrink-0"
+                    >
+                        {{ formatAmount(lender.balance) }} {{ CREDIT_NAME }}
+                    </span>
+                </div>
+                <template v-if="isLoading">
+                    <div v-for="i in 3" :key="i" class="py-1">
+                        <Skeleton class="h-4 w-full" />
+                    </div>
+                </template>
+            </template>
         </div>
     </div>
 </template>
@@ -45,10 +57,10 @@ import { useCrowdsourceLender } from '~/composables/useCrowdsourceLender';
 import useUserDeposit from '~/composables/useUserDeposit';
 import { useAccount } from '@wagmi/vue';
 import { formatUnits } from 'viem';
-import { formatDecimalPoint } from '~/lib/format-decimals';
+import { Skeleton } from '~/components/ui/skeleton';
 
 // TODO remove later on, this is just for testing
-const { lenders, totalLenders } = useCrowdsourceLender()
+const { lenders, totalLenders, isLoading } = useCrowdsourceLender()
 
 const { isConnected } = useAccount()
 const { userDeposit, userDepositFormatted } = useUserDeposit()
@@ -63,8 +75,10 @@ const formatAddress = (address: string) => {
     return address.substring(0, 6) + '...' + address.substring(address.length - 4)
 }
 
-// Format amount with commas and 2 decimal places
+// Format amount with commas and no decimal places (rounded to nearest integer)
 const formatAmount = (amount: bigint) => {
-    return formatDecimalPoint(formatUnits(amount, CREDIT_DECIMALS), 2)
+    const amountInUnits = formatUnits(amount, CREDIT_DECIMALS)
+    const rounded = Math.round(Number(amountInUnits))
+    return rounded.toLocaleString('en-US')
 }
 </script>
