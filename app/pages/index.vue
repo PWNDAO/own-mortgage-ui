@@ -15,7 +15,6 @@
               <div class="contents lg:flex lg:flex-col lg:gap-4 lg:flex-1">
                   <TermsBox />
                   <DescriptionBox />
-                  <LoanDefaultGraphBox />
               </div>
               <!-- Right column: ContributeBox, RewardsBox, SupportersBox -->
               <div class="contents lg:flex lg:flex-col lg:gap-4 lg:flex-1">

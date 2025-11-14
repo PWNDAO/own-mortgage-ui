@@ -6,10 +6,11 @@
             </p>
             <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm">
                 <li>
-                    <span class="font-semibold">Liquidation Threshold</span> (dashed blue line): The maximum debt allowed at any point in time. If the debt exceeds this line, the loan may be liquidated.
-                </li>
-                <li>
-                    <span class="font-semibold">Minimal Repayment Path</span> (solid green line): Shows the cumulative amount repaid over time if the borrower makes minimal required repayments to avoid default. This line starts at 0 and increases as payments are made.
+                    <span class="font-semibold">Minimal Repayment Path</span>
+                    Displays the minimum cumulative repayment required over time to keep the loan from defaulting. 
+                    The line begins at zero and increases as the required payments are made. 
+                    If the borrower fails to meet these minimum payments at any point, the loan goes into default.
+
                 </li>
             </ul>
             <p class="mt-2 text-xs italic text-gray-2">
@@ -29,7 +30,8 @@ import {
   LineElement,
   PointElement,
   LinearScale,
-  CategoryScale
+  CategoryScale,
+  type TooltipItem
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import { POSTPONEMENT_IN_MONTHS, LOAN_DURATION_IN_MONTHS, TOTAL_AMOUNT_TO_REPAY, CREDIT_NAME } from '~/constants/proposalConstants'
@@ -38,16 +40,6 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale,
 
 // Build f(t) (limit line)
 const labels = Array.from({ length: LOAN_DURATION_IN_MONTHS + 1 }, (_, i) => `${i}m`)
-
-const limitData = labels.map((_, month) => {
-  if (month <= POSTPONEMENT_IN_MONTHS) {
-    return TOTAL_AMOUNT_TO_REPAY // flat during grace
-  } else {
-    const remainingMonths = LOAN_DURATION_IN_MONTHS - POSTPONEMENT_IN_MONTHS
-    const progress = (month - POSTPONEMENT_IN_MONTHS) / remainingMonths
-    return TOTAL_AMOUNT_TO_REPAY * (1 - progress)
-  }
-})
 
 // Build minimal repayment line (cumulative repayments - starts at 0)
 const repaymentData = labels.map((_, month) => {
@@ -64,17 +56,6 @@ const repaymentData = labels.map((_, month) => {
 const data = {
   labels,
   datasets: [
-    {
-      label: 'Liquidation Threshold',
-      data: limitData,
-      borderColor: '#0e9cff',
-      borderDash: [5, 5],
-      borderWidth: 2,
-      fill: false,
-      tension: 0,      // straight line
-      pointRadius: 0,  // <-- disables points
-      hoverRadius: 5,  // radius when hovering
-    },
     {
       label: 'Minimal Repayment Path',
       data: repaymentData,
@@ -94,7 +75,14 @@ const options = {
   plugins: {
     tooltip: {
       mode: 'nearest' as const,     // tooltip triggers on nearest point
-      intersect: false     // allow tooltip even if cursor is not exactly on the line
+      intersect: false,     // allow tooltip even if cursor is not exactly on the line
+      callbacks: {
+        label: (context: TooltipItem<'line'>) => {
+          const value = Math.round(context.parsed.y)
+          const formattedValue = value.toLocaleString('en-US')
+          return `${context.dataset.label}: ${formattedValue} ${CREDIT_NAME}`
+        }
+      }
     }
   },
   interaction: {
