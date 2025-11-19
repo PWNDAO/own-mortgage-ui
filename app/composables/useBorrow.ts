@@ -10,6 +10,7 @@ import PWN_LOAN_ABI from "~/assets/abis/v1.5/PWNLoan"
 import PWN_INSTALLMENTS_PRODUCT_ABI from "~/assets/abis/v1.5/PWNInstallmentsProduct"
 import { proposal } from "~/lib/decode-proposal"
 import Decimal from "decimal.js"
+import PWN_CROWDSOURCE_LENDER_VAULT_ABI from "~/assets/abis/v1.5/PWNCrowdsourceLenderVault"
 
 export default function useBorrow() {
 
@@ -112,14 +113,129 @@ export default function useBorrow() {
         return txReceipt
     }
 
-    const repay = async () => {
-        // TODO here we also probably need to approve?
+    const approveForRepayIfNeeded = async (step: ToastStep, repaymentAmount: bigint) => {
+        const currentAllowance = await readContract(wagmiConfig, {
+            abi: erc20Abi,
+            functionName: 'allowance',
+            args: [userAddress.value!, PWN_LOAN_ADDRESS],
+            address: CREDIT_ADDRESS,
+            chainId: connectedChainId.value,
+        })
+
+        if (currentAllowance < repaymentAmount) {
+            await sendTransaction({
+                abi: erc20Abi,
+                functionName: 'approve',
+                args: [PWN_LOAN_ADDRESS, repaymentAmount],
+                address: CREDIT_ADDRESS,
+                chainId: connectedChainId.value,
+            }, { step })
+        }
+
+        return true
+    }
+
+    const getLoanId = async () => {
+        return await readContract(wagmiConfig, {
+            abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+            functionName: 'loanId',
+            args: [],
+            address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+            chainId: connectedChainId.value,
+        })
+    }
+
+    const getRemainingDebt = async (loanId: bigint) => {
+        return await readContract(wagmiConfig, {
+            abi: PWN_LOAN_ABI,
+            functionName: 'getLOANDebt',
+            args: [loanId],
+            address: PWN_LOAN_ADDRESS,
+            chainId: connectedChainId.value,
+        })
+    }
+
+    const repay = async (step: ToastStep, repaymentAmount: bigint) => {
+        const loanId = await getLoanId()
+        const txReceipt = await sendTransaction({
+            abi: PWN_LOAN_ABI,
+            functionName: 'repay',
+            args: [loanId, repaymentAmount],
+            address: PWN_LOAN_ADDRESS,
+            chainId: connectedChainId.value,
+        }, { step })
+        return txReceipt
+    }
+
+    /**
+     * Calculate the timestamp when the next payment must be made to avoid default.
+     * This is calculated by finding when the default debt limit equals the current debt.
+     * 
+     * Formula: timestamp = defaultTimestamp - (currentDebt * 10^DEBT_LIMIT_TANGENT_DECIMALS) / debtLimitTangent
+     * 
+     * @param loanId The loan ID
+     * @returns The timestamp (in seconds) when payment is needed, or null if already defaulted or no loan exists
+     */
+    const getNextPaymentDeadline = async (loanId: bigint): Promise<bigint | null> => {
+        try {
+            // Get loan data (returns tuple: [apr, defaultTimestamp, debtLimitTangent])
+            const loanData = await readContract(wagmiConfig, {
+                abi: PWN_INSTALLMENTS_PRODUCT_ABI,
+                functionName: 'loanData',
+                address: PWN_INSTALLMENTS_PRODUCT_ADDRESS,
+                chainId: connectedChainId.value,
+                args: [PWN_LOAN_ADDRESS, loanId],
+            })
+
+            // Get DEBT_LIMIT_TANGENT_DECIMALS constant
+            const debtLimitTangentDecimals = await readContract(wagmiConfig, {
+                abi: PWN_INSTALLMENTS_PRODUCT_ABI,
+                functionName: 'DEBT_LIMIT_TANGENT_DECIMALS',
+                address: PWN_INSTALLMENTS_PRODUCT_ADDRESS,
+                chainId: connectedChainId.value,
+                args: [],
+            })
+
+            // Get current remaining debt
+            const currentDebt = await getRemainingDebt(loanId)
+
+            // loanData is a tuple: [apr, defaultTimestamp, debtLimitTangent]
+            const defaultTimestamp = BigInt(loanData[1])
+            const debtLimitTangent = BigInt(loanData[2])
+
+            // If already past default timestamp, return null
+            const currentTimestamp = BigInt(Math.floor(Date.now() / 1000))
+            if (currentTimestamp >= defaultTimestamp) {
+                return null
+            }
+
+            // If debt is 0, no payment needed
+            if (currentDebt === 0n) {
+                return null
+            }
+
+            // Calculate: timestamp = defaultTimestamp - (currentDebt * 10^DEBT_LIMIT_TANGENT_DECIMALS) / debtLimitTangent
+            const decimalsMultiplier = 10n ** BigInt(debtLimitTangentDecimals)
+            const numerator = currentDebt * decimalsMultiplier
+            const deadlineTimestamp = defaultTimestamp - (numerator / debtLimitTangent)
+
+            // If the calculated deadline is in the past, the loan is already at risk
+            // Return the deadline anyway so the UI can show it
+            return deadlineTimestamp
+        } catch (error) {
+            console.error('Error calculating next payment deadline:', error)
+            return null
+        }
     }
 
     return {
         getCollateralAmountFromCreditAmount,
         approveForAcceptIfNeeded,
         acceptProposal,
-        repay
+        approveForRepayIfNeeded,
+        repay,
+        getRemainingDebt,
+        getLoanId,
+        getNextPaymentDeadline,
     }
 }
