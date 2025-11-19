@@ -15,7 +15,7 @@
                         </p>
 
                         <div class="my-4 flex justify-center">
-                            <img src="/images/bordel-hackerspace.jpeg" alt="Bordel Hackerspace" class="w-full sm:w-3/4 md:w-1/2"/>
+                            <img src="/images/bordel-gif.gif" alt="Bordel Hackerspace" class="w-full sm:w-3/4 md:w-1/2"/>
                         </div>
 
                         <a href="https://bordel.wtf" target="_blank">

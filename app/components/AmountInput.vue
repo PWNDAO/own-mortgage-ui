@@ -43,10 +43,12 @@ import { useReadContract, useAccount } from '@wagmi/vue'
 import { formatDecimalPoint } from '~/lib/format-decimals'
 import { useIsMutating } from '@tanstack/vue-query'
 import MutationIds from '~/constants/mutationIds'
+import useUserDepositStore from '~/composables/useUserDepositStore'
 
 const { missingAmount } = useProposal()
 
-const { userDeposit, userDepositFormatted } = useUserDeposit()
+const userDepositStore = useUserDepositStore()
+const { userDeposit, userDepositFormatted } = storeToRefs(userDepositStore)
 
 const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
@@ -56,6 +58,8 @@ watch(userDepositFormatted, (newVal) => {
         lendAmount.value = newVal
     }
 }, { immediate: true })
+
+// TODO add check if user has inputted amount that is greater than the max amount (or the max remaining amount)...
 
 const withdrawingMutationsCount = useIsMutating({ mutationKey: [MutationIds.Withdraw] })
 const depositingMutationsCount = useIsMutating({ mutationKey: [MutationIds.Deposit] })

@@ -1,4 +1,4 @@
-import { parseUnits, type Address } from "viem"
+import { formatUnits, parseUnits, type Address } from "viem"
 import { proposal } from "@/lib/decode-proposal"
 import { sepolia } from "@reown/appkit/networks";
 import Decimal from "decimal.js";
@@ -29,22 +29,23 @@ export const CREDIT_NAME = 'EURS'
 //export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
 export const CREDIT_ASSET_ICON = '/icons/eurs.svg'
 export const COLLATERAL_NAME = 'WETH'
+export const COLLATERAL_DECIMALS = 18
 
 export const COLLATERAL_ASSET_ICON = '/icons/chain/ethereum.svg'
 
-// note: the max amount will be only enforced on frontend
-export const MAX_AMOUNT_FORMATTED = '20000';
-export const MAX_AMOUNT: bigint = parseUnits(MAX_AMOUNT_FORMATTED, CREDIT_DECIMALS)
+// note: the max amount will be only enforced on frontend, there is no concept of max credit amount
+//  in the smart contracts
+export const MAX_AMOUNT_FORMATTED: number = 500;
+export const MAX_AMOUNT: bigint = parseUnits(String(MAX_AMOUNT_FORMATTED), CREDIT_DECIMALS)
 
-export const TOTAL_AMOUNT_TO_REPAY = new Decimal(MAX_AMOUNT_FORMATTED)
+export const TOTAL_AMOUNT_TO_REPAY = new Decimal(String(MAX_AMOUNT_FORMATTED))
   .mul(
     new Decimal(1).add(
       new Decimal(LOAN_APY).div(10000).mul(LOAN_DURATION_IN_YEARS)
     )
   );
 
-// TODO uncomment this one and remove the hardcoded value below this one
-// export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE = new Decimal(formatUnits(MINIMAL_CREDIT_AMOUNT, CREDIT_DECIMALS)).div(formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)).toDecimalPlaces(2, Decimal.ROUND_FLOOR).toString()
-export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE = '0.6';
+// note: holds value between 0 and 1 (e.g. 60% is represented as 0.6)
+export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE: string = new Decimal(formatUnits(MINIMAL_CREDIT_AMOUNT, CREDIT_DECIMALS)).div(formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)).toDecimalPlaces(2, Decimal.ROUND_FLOOR).toString()
 
 export const MINIMAL_APR = 2.5 // used only for displaying purposes

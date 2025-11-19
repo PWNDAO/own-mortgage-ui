@@ -27,11 +27,11 @@ const totalDepositedAssetsFormattedDecimals = computed(() => {
     return Math.floor(Number(totalDepositedAssetsFormatted.value)).toLocaleString()
 })
 
-const maxAmountFormattedDecimals = computed(() => Number(MAX_AMOUNT_FORMATTED).toLocaleString())
+const maxAmountFormattedDecimals = computed(() => MAX_AMOUNT_FORMATTED.toLocaleString())
 
 // Calculate progress percentage
 const progress = computed(() => {
-    const percentage = (Number(totalDepositedAssetsFormatted.value) / Number(MAX_AMOUNT_FORMATTED)) * 100
+    const percentage = (Number(totalDepositedAssetsFormatted.value) / MAX_AMOUNT_FORMATTED) * 100
     if (percentage > 100) {
         return 100
     }

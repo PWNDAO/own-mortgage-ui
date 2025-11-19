@@ -8,7 +8,7 @@
         <div class="mb-3">
             <AmountInput :prefilled-amount="userDepositFormatted" />
             <div v-if="isAmountInputLowerThanUserDeposit" class="mt-2 text-sm text-gray-2">
-                Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdraw }} {{ CREDIT_NAME }} from your deposit.
+                Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdrawFormatted }} {{ CREDIT_NAME }} from your deposit.
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2 mt-3">
@@ -39,7 +39,7 @@
                 <div class="flex-1 min-w-0">
                     <div class="text-base sm:text-lg md:text-2xl font-bold text-left break-words">{{ lendButtonText }}</div>
                     <div class="flex items-center gap-1 text-xs sm:text-sm mt-1">
-                        <span v-if="amountToDepositAdditionally > 0">+ earn {{ MINIMAL_APR }}% or more</span>
+                        <span v-if="amountToDepositAdditionally > 0n">+ earn {{ MINIMAL_APR }}% or more</span>
                     </div>
                 </div>
                 <div class="flex-shrink-0 ml-2">
@@ -59,53 +59,40 @@ import { erc20Abi, parseUnits, type Address } from 'viem';
 import useAmountInputStore from '~/composables/useAmountInputStore';
 import { useMutation } from '@tanstack/vue-query';
 import { useReadContract, useAccount } from '@wagmi/vue';
-import useUserDeposit from '~/composables/useUserDeposit';
-import { formatDecimalPoint } from '~/lib/format-decimals';
 import { ToastStep, Toast, TOAST_ACTION_ID_TO_UNIQUE_ID_FN, ToastActionEnum } from '~/components/ui/toast/useToastsStore';
 import useActionFlow from '~/components/ui/toast/useActionFlow';
 import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue';
-import Decimal from 'decimal.js';
 import MutationIds from '~/constants/mutationIds';
 import { useAppKit } from "@reown/appkit/vue";
 import useProposal from '~/composables/useProposal';
+import useUserDepositStore from '~/composables/useUserDepositStore';
 
 const amountInputStore = useAmountInputStore()
-const { lendAmount } = storeToRefs(amountInputStore)
+
+const userDepositStore = useUserDepositStore()
+const { userDeposit, userDepositFormatted } = storeToRefs(userDepositStore)
+const { 
+    lendAmount, 
+    lendAmountFormatted, 
+    amountToWithdrawFormatted,
+    amountToDepositAdditionally, 
+    amountToDepositAdditionallyFormatted, 
+    isAmountInputLowerThanUserDeposit 
+} = storeToRefs(amountInputStore)
 const { address, isConnected } = useAccount()
 
 const { refetchTotalDepositedAssets } = useProposal()
 
 const { open } = useAppKit();
 
-const { userDeposit, userDepositFormatted } = useUserDeposit()
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
-const amountToWithdraw = computed(() => {
-    return Decimal(userDepositFormatted.value).sub(Decimal(lendAmount.value || '0'))
-})
-
-const amountToDepositAdditionally = computed(() => {
-    return Number(lendAmount.value) - Number(userDepositFormatted.value)
-})
-
-const amountToDepositAdditionallyFormatted = computed(() => {
-    return formatDecimalPoint(amountToDepositAdditionally.value, 2)
-})
-
-const isAmountInputLowerThanUserDeposit = computed(() => {
-    return amountToDepositAdditionally.value < 0
-})
-
-const lendAmountFormatted = computed(() => {
-    return formatDecimalPoint(lendAmount.value, 2)
-})
-
 const lendButtonText = computed(() => {
-    if (userDeposit.value > 0n && amountToDepositAdditionally.value > 0) {
+    if (userDeposit.value > 0n && amountToDepositAdditionally.value > 0n) {
         return 'DEPOSIT ' + amountToDepositAdditionallyFormatted.value + ' ' + CREDIT_NAME + ' MORE'
     } else if (isAmountInputLowerThanUserDeposit.value) {
-        return 'WITHDRAW ' + amountToWithdraw.value + ' ' + CREDIT_NAME
-    } else if (userDeposit.value === 0n && amountToDepositAdditionally.value > 0) {
+        return 'WITHDRAW ' + amountToWithdrawFormatted.value + ' ' + CREDIT_NAME
+    } else if (userDeposit.value === 0n && amountToDepositAdditionally.value > 0n) {
         return 'DEPOSIT ' + lendAmountFormatted.value + ' ' + CREDIT_NAME
     } else {
         return 'DEPOSIT'
@@ -138,7 +125,7 @@ const canSubmit = computed(() => {
         return false
     }
 
-    if (amountToDepositAdditionally.value === 0) {
+    if (amountToDepositAdditionally.value === 0n) {
         return false
     }
 
@@ -176,7 +163,7 @@ const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsyn
 const { isPending: isWithdrawing, mutateAsync: withdrawMutateAsync } = useMutation({
     mutationKey: [MutationIds.Withdraw],
     mutationFn: async ({ step }: { step: ToastStep }) => {
-        await withdraw(parseUnits(amountToWithdraw.value.toString(), CREDIT_DECIMALS), step)
+        await withdraw(parseUnits(amountToWithdrawFormatted.value, CREDIT_DECIMALS), step)
     },
     onSuccess() {
         refetchTotalDepositedAssets()
@@ -219,15 +206,22 @@ const handleDepositClick = async () => {
 
     if (isAmountInputLowerThanUserDeposit.value) {
         steps.push(new ToastStep({
-            text: `Withdrawing ${amountToWithdraw.value} ${CREDIT_NAME}...`,
+            text: `Withdrawing ${amountToWithdrawFormatted.value} ${CREDIT_NAME}...`,
             async fn(step) {
                 await withdrawMutateAsync({ step })
                 return true
             }
         }))
     } else {
+        let stepText
+        if (userDeposit.value > 0n) {
+            stepText = `Depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...`
+        } else {
+            stepText = `Depositing ${lendAmount.value} ${CREDIT_NAME}...`
+        }
+        
         steps.push(new ToastStep({
-            text: `Depositing ${lendAmount.value} ${CREDIT_NAME}...`,
+            text: stepText,
             async fn(step) {
                 await depositMutateAsync({ step })
                 return true

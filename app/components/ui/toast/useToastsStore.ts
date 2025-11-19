@@ -11,10 +11,12 @@ import type { PROPOSAL_CHAIN_ID } from '~/constants/proposalConstants'
 
 export enum ToastActionEnum {
   DEPOSIT = 'DEPOSIT',
+  ACCEPT_PROPOSAL = 'ACCEPT_PROPOSAL',
 }
 
 const _actionIdToUniqueToastId = {
   [ToastActionEnum.DEPOSIT]: (amount: string, userAddress: Address) => `${ToastActionEnum.DEPOSIT}_${userAddress}_${amount}`,
+  [ToastActionEnum.ACCEPT_PROPOSAL]: (creditAmount: string, userAddress: Address) => `${ToastActionEnum.ACCEPT_PROPOSAL}_${userAddress}_${creditAmount}`,
 } as const
 
 export type ToastActionId = keyof typeof _actionIdToUniqueToastId

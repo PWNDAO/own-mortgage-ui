@@ -54,15 +54,20 @@
 <script setup lang="ts">
 import { CREDIT_NAME, CREDIT_DECIMALS } from '~/constants/proposalConstants';
 import { useCrowdsourceLender } from '~/composables/useCrowdsourceLender';
-import useUserDeposit from '~/composables/useUserDeposit';
 import { useAccount } from '@wagmi/vue';
 import { formatUnits } from 'viem';
 import { Skeleton } from '~/components/ui/skeleton';
+import useUserDepositStore from '~/composables/useUserDepositStore';
+
+// TODO after the loan has been accepted (created), do not modify the list of lenders anymore
+
+// TODO adjust user deposits amount after the loan has defaulted so they show up correctly...
 
 const { lenders, totalLenders, isLoading } = useCrowdsourceLender()
 
 const { isConnected } = useAccount()
-const { userDeposit, userDepositFormatted } = useUserDeposit()
+const userDepositStore = useUserDepositStore()
+const { userDeposit, userDepositFormatted } = storeToRefs(userDepositStore)
 
 // Format addresses to be more readable
 const formatAddress = (address: string) => {

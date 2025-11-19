@@ -1,7 +1,7 @@
-import { erc20Abi, parseUnits } from "viem"
+import { erc20Abi } from "viem"
 import PWN_CROWDSOURCE_LENDER_VAULT_ABI from "~/assets/abis/v1.5/PWNCrowdsourceLenderVault"
 import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from "~/constants/addresses"
-import { CREDIT_ADDRESS, CREDIT_DECIMALS } from "~/constants/proposalConstants"
+import { CREDIT_ADDRESS } from "~/constants/proposalConstants"
 import { useAccount } from "@wagmi/vue"
 import { readContract } from "@wagmi/core/actions"
 import { wagmiConfig } from "~/config/appkit"
@@ -10,12 +10,9 @@ import type { ToastStep } from "~/components/ui/toast/useToastsStore"
 
 export default function useLend() {
     const amountInputStore = useAmountInputStore()
-    const { lendAmount } = storeToRefs(amountInputStore)
     const { address: userAddress, chainId: connectedChainId } = useAccount()
 
     const approveForDepositIfNeeded = async (step: ToastStep) => {
-        const lendAmountBigInt = parseUnits(lendAmount.value, CREDIT_DECIMALS)
-
         const currentAllowance = await readContract(wagmiConfig, {
             abi: erc20Abi,
             functionName: 'allowance',
@@ -24,11 +21,11 @@ export default function useLend() {
             chainId: connectedChainId.value,
         })
 
-        if (currentAllowance < lendAmountBigInt) {
+        if (currentAllowance < amountInputStore.lendAmountBigInt) {
             await sendTransaction({
                 abi: erc20Abi,
                 functionName: 'approve',
-                args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, lendAmountBigInt],
+                args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountInputStore.lendAmountBigInt],
                 address: CREDIT_ADDRESS,
                 chainId: connectedChainId.value,
             }, { step })
@@ -49,11 +46,10 @@ export default function useLend() {
     }
 
     const deposit = async (step: ToastStep) => {
-        const lendAmountBigInt = parseUnits(lendAmount.value, CREDIT_DECIMALS)
         const txReceipt = await sendTransaction({
             abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
             functionName: 'deposit',
-            args: [lendAmountBigInt, userAddress.value!],
+            args: [amountInputStore.amountToDepositAdditionally, userAddress.value!],
             address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
             chainId: connectedChainId.value,
         }, { step })

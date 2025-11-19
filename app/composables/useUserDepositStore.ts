@@ -8,7 +8,7 @@ import { computedAsync } from '@vueuse/core'
 import { wagmiConfig } from '~/config/appkit'
 import { readContract } from '@wagmi/core/actions'
 
-export default function useUserDeposit() {
+export const useUserDepositStore = defineStore('userDeposit', () => {
     const { address: userAddress } = useAccount()
 
     // returns shares
@@ -73,4 +73,6 @@ export default function useUserDeposit() {
         userDepositFormatted,
         userDepositFormattedDecimals
     }
-}
+})
+
+export default useUserDepositStore
