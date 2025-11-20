@@ -23,6 +23,8 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
     })
     const userShares = computed<bigint>(() => userDepositQuery.data?.value ?? 0n)
 
+    const isFetchingUserDeposit = computed(() => userDepositQuery.isFetching.value)
+
     const userDeposit = computedAsync<bigint>(
         async () => {
             if (!userShares.value) {
@@ -71,7 +73,8 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
     return {
         userDeposit,
         userDepositFormatted,
-        userDepositFormattedDecimals
+        userDepositFormattedDecimals,
+        isFetchingUserDeposit
     }
 })
 

@@ -28,8 +28,11 @@
                     Max
                 </Button>
             </div>
-            <div v-if="isAmountInvalid" class="text-xs text-red-500 mt-1">
-                Amount exceeds balance
+            <div v-if="hasNoCreditAssets" class="text-xs text-amber-500 mt-1">
+                You don't have any {{ CREDIT_NAME }} assets. Please acquire some to lend.
+            </div>
+            <div v-else-if="isAmountInvalid" class="text-xs text-red-500 mt-1">
+                {{ amountInvalidMessage }}
             </div>
         </div>
     </div>
@@ -44,6 +47,7 @@ import { formatDecimalPoint } from '~/lib/format-decimals'
 import { useIsMutating } from '@tanstack/vue-query'
 import MutationIds from '~/constants/mutationIds'
 import useUserDepositStore from '~/composables/useUserDepositStore'
+import useProposal from '~/composables/useProposal'
 
 const { missingAmount } = useProposal()
 
@@ -58,11 +62,6 @@ watch(userDepositFormatted, (newVal) => {
         lendAmount.value = newVal
     }
 }, { immediate: true })
-
-// TODO if user does not have any credit asset, show a warning... currently we are just disabling the input
-//  without telling anything
-
-// TODO add check if user has inputted amount that is greater than the max amount (or the max remaining amount)...
 
 const withdrawingMutationsCount = useIsMutating({ mutationKey: [MutationIds.Withdraw] })
 const depositingMutationsCount = useIsMutating({ mutationKey: [MutationIds.Deposit] })
@@ -85,8 +84,15 @@ const walletBalanceQuery = useReadContract({
 
 const walletBalance = computed(() => walletBalanceQuery.data.value)
 
+const isFetchingWalletBalance = computed(() => walletBalanceQuery.isFetching.value)
+
 const walletBalancePlusUserDeposit = computed(() => {
     return (walletBalance.value ?? 0n) + (userDeposit.value ?? 0n)
+})
+
+// Check if user has no credit assets (for warning message)
+const hasNoCreditAssets = computed(() => {
+    return isConnected.value && walletBalancePlusUserDeposit.value <= 0n && !userDeposit.value && !isFetchingWalletBalance.value
 })
 
 const isAmountInputDisabled = computed(() => {
@@ -108,7 +114,7 @@ const walletBalancePlusUserDepositFormatted = computed(() => {
     return formatDecimalPoint(formatUnits(walletBalancePlusUserDeposit.value, CREDIT_DECIMALS), 2)
 })
 
-// Check if amount input is invalid (exceeds balance)
+// Check if amount input is invalid (exceeds balance or missing amount)
 const isAmountInvalid = computed(() => {
     if (walletBalancePlusUserDeposit.value <= 0n) {
         return false
@@ -119,11 +125,35 @@ const isAmountInvalid = computed(() => {
     try {
         // Parse the input amount using viem parseUnits with the token's decimals
         const amount = parseUnits(amountStr, CREDIT_DECIMALS)
-        return amount > walletBalancePlusUserDeposit.value
+        return amount > walletBalancePlusUserDeposit.value || amount > missingAmount.value
     } catch {
         // If parsing fails (invalid input), consider it invalid
         return true
     }
+})
+
+// Get the appropriate error message for invalid amount
+const amountInvalidMessage = computed(() => {
+    if (walletBalancePlusUserDeposit.value <= 0n) {
+        return ''
+    }
+
+    const amountStr = lendAmount.value || '0'
+    
+    try {
+        const amount = parseUnits(amountStr, CREDIT_DECIMALS)
+        if (amount > missingAmount.value) {
+            const missingAmountFormatted = formatDecimalPoint(formatUnits(missingAmount.value, CREDIT_DECIMALS), 2)
+            return `Amount exceeds maximum remaining amount (${missingAmountFormatted} ${CREDIT_NAME})`
+        }
+        if (amount > walletBalancePlusUserDeposit.value) {
+            return 'Amount exceeds balance'
+        }
+    } catch {
+        return 'Invalid amount'
+    }
+    
+    return ''
 })
 
 const handleWalletBalanceClick = () => {
