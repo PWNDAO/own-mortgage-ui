@@ -59,6 +59,9 @@ watch(userDepositFormatted, (newVal) => {
     }
 }, { immediate: true })
 
+// TODO if user does not have any credit asset, show a warning... currently we are just disabling the input
+//  without telling anything
+
 // TODO add check if user has inputted amount that is greater than the max amount (or the max remaining amount)...
 
 const withdrawingMutationsCount = useIsMutating({ mutationKey: [MutationIds.Withdraw] })

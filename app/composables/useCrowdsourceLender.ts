@@ -5,6 +5,7 @@ import { readContracts } from "@wagmi/core/actions"
 import { wagmiConfig } from '~/config/appkit'
 import { PROPOSAL_CHAIN_ID, CREDIT_DECIMALS } from '~/constants/proposalConstants'
 import PWN_CROWDSOURCE_LENDER_VAULT_ABI from '~/assets/abis/v1.5/PWNCrowdsourceLenderVault'
+import { mainnet, sepolia } from "viem/chains"
 
 // Types for Moralis API response
 interface MoralisTransferEvent {
@@ -48,7 +49,11 @@ interface CrowdsourceLender {
 
 // Moralis API configuration
 const MORALIS_BASE_URL = 'https://deep-index.moralis.io/api/v2.2'
-const CHAIN = 'sepolia'
+const CHAIN_ID_TO_MORALIS_CHAIN_ARG = {
+  [mainnet.id]: 'eth',
+  [sepolia.id]: 'sepolia'
+} as const
+const CHAIN = CHAIN_ID_TO_MORALIS_CHAIN_ARG[PROPOSAL_CHAIN_ID]
 
 // TODO does this caching makes sense? or shall we turn this to tanstack query?
 // Local storage for caching
