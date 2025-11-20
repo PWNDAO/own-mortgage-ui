@@ -2,7 +2,7 @@
     <div class="border p-3 sm:p-4 order-4 lg:order-none">
         <h3 class="font-heading text-lg sm:text-xl mb-3">Rewards</h3>
         <div class="mb-4 text-sm sm:text-base">
-            Lend and get rewards! Based on your tier you will be eligible to receive different benefits.
+            Lend and get rewards! Get various rewards based on the amount of liquidity you are able to lend. <b>Remember you are only lending, not donating this amount</b> and the loan is slowly repayed every few months. You can claim any time!
         </div>
         <div class="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded">
             <p class="text-sm text-blue-200">
@@ -55,7 +55,7 @@
         </div>
 
         <div class="text-gray-2 mt-4 pl-1 italic">
-            Note: Not sure how to claim rewards? 
+            The reward will be tied to the address you are using to lend. Stay updated to claim your rewards:
             <button 
                 class="text-blue-400 hover:text-blue-300 underline cursor-pointer"
                 @click="notificationModalRef?.openModal()"
@@ -94,23 +94,33 @@ const isAmountInputFilledAndNotEligibleForReward = (rewardThreshold: number) => 
 const REWARDS = [
     {
         amount: `$1000+ ${CREDIT_NAME}`,
-        reward: '3 months membership',
+        reward: '2 month membership in BORDEL hackerspace, opening party special invite',
         threshold: 1000,
     },
     {
         amount: `$3000+ ${CREDIT_NAME}`,
-        reward: '1 year membership',
+        reward: '6 month membership + above, BORDEL supporter T-shirt',
         threshold: 3000,
     },
     {
         amount: `$5000+ ${CREDIT_NAME}`,
-        reward: 'Organize private event for free',
+        reward: '1 year membership + all above, free space to organize your private event',
         threshold: 5000,
     },
     {
-        amount: `$10000+ ${CREDIT_NAME}`,
-        reward: 'VIP membership',
+        amount: `$10 000+ ${CREDIT_NAME}`,
+        reward: '2 year VIP membership + all above, own private space, server hosting',
         threshold: 10000,
+    },
+    {
+        amount: `$25 000+ ${CREDIT_NAME}`,
+        reward: '5 year VIP membership + all above, access to every events, supporter art plaque and branding',
+        threshold: 25000,
+    },
+    {
+        amount: `$50 000+ ${CREDIT_NAME}`,
+        reward: 'VIP supporter, custom reward and collaboration, contact us to discuss details',
+        threshold: 50000,
     },
 ]
 
