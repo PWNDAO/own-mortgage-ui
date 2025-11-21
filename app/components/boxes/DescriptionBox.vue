@@ -37,7 +37,7 @@
                             By distributing risk across many lenders instead of relying on one, this setup encourages community involvement and ensures more accessible and sustainable funding.
                         </p>
 
-                        <a href="https://mirror.xyz/bordel.eth/1i5LGBtPm-HbCAZCTcUUWneU_99YIQMtO3BxxYMU1h4" target="_blank">
+                        <a href="https://paragraph.com/@bordel/decentralized-crowdloaning" target="_blank">
                             <Button variant="outline" class="w-full">
                                 <span>Learn More About Bordel Mortgage</span>
                                 <img

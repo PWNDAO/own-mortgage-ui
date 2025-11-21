@@ -94,7 +94,7 @@ const isAmountInputFilledAndNotEligibleForReward = (rewardThreshold: number) => 
 const REWARDS = [
     {
         amount: `$1000+ ${CREDIT_NAME}`,
-        reward: '2 month membership in BORDEL hackerspace, opening party special invite',
+        reward: '2 month membership in BORDEL hackerspace, zk badge with opening party invite POAP NFT',
         threshold: 1000,
     },
     {
