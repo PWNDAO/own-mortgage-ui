@@ -58,6 +58,8 @@ import { useAccount } from '@wagmi/vue';
 import { formatUnits } from 'viem';
 import { Skeleton } from '~/components/ui/skeleton';
 import useUserDepositStore from '~/composables/useUserDepositStore';
+import { useEnsNames } from '~/composables/useEnsNames';
+import type { Address } from 'viem';
 
 // TODO after the loan has been accepted (created), do not modify the list of lenders anymore
 
@@ -69,8 +71,21 @@ const { isConnected } = useAccount()
 const userDepositStore = useUserDepositStore()
 const { userDeposit, userDepositFormatted } = storeToRefs(userDepositStore)
 
-// Format addresses to be more readable
+// Extract addresses from lenders for ENS lookup
+const lenderAddresses = computed(() => (lenders.value ?? []).map(lender => lender.address as Address))
+
+// Fetch ENS names for all lenders
+const { data: ensNamesMap } = useEnsNames(lenderAddresses)
+
+// Format addresses to be more readable, using ENS name if available
 const formatAddress = (address: string) => {
+    // Check if we have an ENS name for this address (normalize for lookup)
+    const normalizedAddress = address.toLowerCase()
+    const ensName = ensNamesMap.value?.get(normalizedAddress)
+    if (ensName) {
+        return ensName
+    }
+    
     // Don't truncate named addresses (those ending with .eth)
     if (address.endsWith('.eth')) {
         return address
