@@ -58,6 +58,6 @@ useSeoMeta({
   themeColor: '#000000',
   robots: 'index, follow',
   author: 'OWN Labs',
-  keywords: 'DeFi, mortgage, blockchain, Ethereum, Bordel Hackerspace, crowdfunding, decentralized finance, crypto loan, WETH, EURS',
+  keywords: 'DeFi, mortgage, blockchain, Ethereum, Bordel Hackerspace, crowdfunding, decentralized finance, crypto loan, weETH, USDC',
 })
 </script>
