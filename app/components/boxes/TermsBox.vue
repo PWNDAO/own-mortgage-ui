@@ -1,9 +1,9 @@
 <template>
-    <div class="border p-3 sm:p-4 order-2 lg:order-none">
-        <h3 class="text-lg sm:text-xl font-heading">Crowdsourced DeFi mortgage - terms</h3>
-        <p class="text-gray-2 text-base sm:text-lg mt-1 mb-4">Crypto-backed mortgage-like crowdsourced DeFi loan with gradual installments.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
-            <div v-for="item in TERMS_ITEMS" :key="item.label" class="border p-3">
+    <div class="bg-card border rounded-xl p-3 sm:p-4 order-2 lg:order-none shadow-lg">
+        <h3 class="text-xl sm:text-2xl font-heading mb-2">Loan Terms</h3>
+        <p class="text-gray-2 text-sm sm:text-base mb-4">Crypto-backed mortgage with gradual installments.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            <div v-for="item in TERMS_ITEMS" :key="item.label" class="border rounded-lg p-3 bg-background/50">
                 <div class="text-sm text-gray">{{ item.label }}</div>
                 <div v-if="item.label === PROPOSAL_DURATION_LABEL">
                     <DeadlineCountdown class="text-lg sm:text-xl md:text-2xl font-semibold" />
@@ -25,8 +25,47 @@
                 </div>
             </div>
         </div>
-        <div class="mb-8">Raised so far</div>
-        <ProgressBar />
+        
+        <!-- Expandable Details -->
+        <Accordion type="single" collapsible class="mt-3">
+            <AccordionItem value="details">
+                <AccordionTrigger class="text-sm text-gray-400 hover:text-gray-200">
+                    View Token Details
+                </AccordionTrigger>
+                <AccordionContent>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <div class="border rounded-lg p-3 bg-background/50">
+                            <div class="text-sm text-gray-400 mb-1">Collateral Token</div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold">{{ COLLATERAL_NAME }}</span>
+                                <a :href="getExplorerTokenAddressLink(COLLATERAL_ADDRESS)" target="_blank" class="cursor-pointer group">
+                                    <img
+                                        src="/icons/external.svg"
+                                        alt="Block Explorer Link"
+                                        class="w-3 h-3 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
+                                        style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
+                                    />
+                                </a>
+                            </div>
+                        </div>
+                        <div class="border rounded-lg p-3 bg-background/50">
+                            <div class="text-sm text-gray-400 mb-1">Credit Token</div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold">{{ CREDIT_NAME }}</span>
+                                <a :href="getExplorerTokenAddressLink(CREDIT_ADDRESS)" target="_blank" class="cursor-pointer group">
+                                    <img
+                                        src="/icons/external.svg"
+                                        alt="Block Explorer Link"
+                                        class="w-3 h-3 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
+                                        style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
+                                    />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
     </div>
 </template>
 
@@ -35,36 +74,28 @@ import { COLLATERAL_ADDRESS, COLLATERAL_NAME, CREDIT_ADDRESS, CREDIT_NAME, LOAN_
 import { getExplorerTokenAddressLink } from '~/constants/links';
 
 const PROPOSAL_DURATION_LABEL = "Deadline"
-const COLLATERAL_NAME_LABEL = "Collateral"
-const CREDIT_NAME_LABEL = "Credit"
 
+// Only show critical terms - details moved to expandable section
 const TERMS_ITEMS = [
-    {
-        label: COLLATERAL_NAME_LABEL,
-        value: COLLATERAL_NAME,
-        address: COLLATERAL_ADDRESS,
-    },
-    {
-        label: CREDIT_NAME_LABEL,
-        value: CREDIT_NAME,
-        address: CREDIT_ADDRESS
-    },
     {
         label: 'LTV',
         value: `${LOAN_LTV / 100}%`,
+        tooltip: 'Loan-to-Value Ratio'
     },
     {
         label: 'Duration',
         value: `${LOAN_DURATION_IN_YEARS}y`,
+        tooltip: 'Loan Duration'
     },
     {
         label: PROPOSAL_DURATION_LABEL,
         value: `${LOAN_DURATION_IN_YEARS}y`,
+        tooltip: 'Funding Deadline'
     }
 ]
 
 const isCollateralOrCreditNameItem = (itemLabel: string) => {
-    return itemLabel === COLLATERAL_NAME_LABEL || itemLabel === CREDIT_NAME_LABEL
+    return false // No longer needed in main grid
 }
 </script>
 

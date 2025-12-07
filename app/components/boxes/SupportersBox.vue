@@ -1,12 +1,12 @@
 <template>
-    <div class="border p-3 sm:p-4 order-6 lg:order-none">
+    <div class="bg-card border rounded-xl p-3 sm:p-4 order-5 lg:order-none shadow-lg">
         <div class="mb-4">
             <h3 class="font-heading text-lg sm:text-xl mb-4">Lenders ({{ totalLenders }})</h3>
         </div>
         <hr class="mb-4">
         
         <template v-if="isConnected && userDeposit > 0n">
-            <div class="mb-4 p-3 border">
+            <div class="mb-4 p-3 border rounded-lg bg-background/50">
                 <div class="flex justify-between items-center">
                     <span class="font-medium text-sm text-gray-300">Your deposit:</span>
                     <span class="font-bold text-lg text-white">{{ userDepositFormatted }} {{ CREDIT_NAME }}</span>

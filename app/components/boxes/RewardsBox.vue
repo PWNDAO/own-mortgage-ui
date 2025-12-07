@@ -1,10 +1,10 @@
 <template>
-    <div class="border p-3 sm:p-4 order-4 lg:order-none">
-        <h3 class="font-heading text-lg sm:text-xl mb-3">Rewards</h3>
+    <div class="bg-card border rounded-xl p-3 sm:p-4 order-4 lg:order-none shadow-lg">
+        <h3 class="font-heading text-xl sm:text-2xl mb-2">Exclusive Rewards</h3>
         <div class="mb-4 text-sm sm:text-base">
             Lend and get rewards! Get various rewards based on the amount of liquidity you are able to lend. <b>Remember you are only lending, not donating this amount</b> and the loan is slowly repayed every few months. You can claim any time!
         </div>
-        <div class="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded">
+        <div class="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded-lg">
             <p class="text-sm text-blue-200">
                 💡 To see what rewards you are eligible for, input the total amount in the amount input field in the Contribute box above.
             </p>
@@ -16,7 +16,7 @@
             <div 
                 v-for="reward in REWARDS" 
                 :key="reward.amount" 
-                class="border p-3 transition-all duration-200"
+                class="border rounded-lg p-3 transition-all duration-200 bg-background/30"
                 :class="{
                     'bg-green-900/20 border-green-600/50': isAmountInputFilledAndEligibleForReward(reward.threshold),
                     'opacity-60': isAmountInputFilledAndNotEligibleForReward(reward.threshold)

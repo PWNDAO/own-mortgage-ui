@@ -1,8 +1,8 @@
 <template>
-    <div class="border p-3 sm:p-4 order-1 lg:order-none">
-        <div class="flex justify-between items-center mb-4 gap-2">
-            <h3 class="font-heading text-lg sm:text-xl">Contribute to the crowdloan</h3>
-            <ShareModal />
+    <div class="bg-card border rounded-xl p-3 sm:p-4 order-3 lg:order-none shadow-lg">
+        <div class="mb-3">
+            <h3 class="font-heading text-xl sm:text-2xl mb-1">Fund This Loan</h3>
+            <p class="text-green-400 text-sm sm:text-base font-semibold">Earn {{ MINIMAL_APR }}% APR + Exclusive Rewards</p>
         </div>
         <hr class="mb-4"/>
         <div class="mb-3">
@@ -12,17 +12,20 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2 mt-3">
-                <div class="p-3 border grow">
+                <div class="p-4 border rounded-lg grow bg-gradient-to-br from-green-900/20 to-green-900/5 border-green-600/30">
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-300 text-sm sm:text-base">APR:</span>
-                        <span class="text-base sm:text-lg font-semibold text-green-400">{{ MINIMAL_APR }}%</span>
+                        <span class="text-gray-300 text-sm sm:text-base">Annual Return:</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl sm:text-5xl font-bold text-green-400">{{ MINIMAL_APR }}</span>
+                            <span class="text-2xl sm:text-3xl font-semibold text-green-400">%</span>
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-400 mt-1">
-                        You also earn interest while waiting for loan acceptance
+                    <div class="text-xs sm:text-sm text-green-300/80 mt-2">
+                        ✓ Earn interest while waiting for loan acceptance
                     </div>
                 </div>
 
-                <div class="p-3 border flex gap-2 sm:gap-5 items-center">
+                <div class="p-3 border rounded-lg flex gap-2 sm:gap-5 items-center bg-background/50">
                     <span class="text-gray-300 text-sm sm:text-base">Chain:</span>
                     <div>
                         <ChainInfo />
@@ -32,7 +35,7 @@
             
             <Button 
                 size="lg" 
-                class="h-auto min-h-[5rem] sm:h-[5rem] w-full flex justify-between items-center mt-3 px-2 sm:px-4" 
+                class="h-auto min-h-[5rem] sm:h-[5rem] w-full flex justify-between items-center mt-3 px-2 sm:px-4 shadow-xl hover:shadow-2xl transition-all duration-300" 
                 :disabled="!canSubmit" 
                 @click="handleDepositClick"
             >
@@ -48,6 +51,22 @@
                     </div>
                 </div>
             </Button>
+            
+            <!-- Trust Signals -->
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-400">
+                <div class="flex items-center gap-1">
+                    <span class="text-green-400">✓</span>
+                    <span>Smart Contract Secured</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-green-400">✓</span>
+                    <span>Non-Custodial</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-green-400">✓</span>
+                    <span>Withdraw Anytime</span>
+                </div>
+            </div>
         </div>
         <NotificationSignupModal ref="notificationModal" :display-open-button="false" />
     </div>
@@ -89,13 +108,13 @@ const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | nul
 
 const lendButtonText = computed(() => {
     if (userDeposit.value > 0n && amountToDepositAdditionally.value > 0n) {
-        return 'DEPOSIT ' + amountToDepositAdditionallyFormatted.value + ' ' + CREDIT_NAME + ' MORE'
+        return 'Deposit ' + amountToDepositAdditionallyFormatted.value + ' ' + CREDIT_NAME + ' More'
     } else if (isAmountInputLowerThanUserDeposit.value) {
-        return 'WITHDRAW ' + amountToWithdrawFormatted.value + ' ' + CREDIT_NAME
+        return 'Withdraw ' + amountToWithdrawFormatted.value + ' ' + CREDIT_NAME
     } else if (userDeposit.value === 0n && amountToDepositAdditionally.value > 0n) {
-        return 'DEPOSIT ' + lendAmountFormatted.value + ' ' + CREDIT_NAME
+        return 'Deposit & Earn'
     } else {
-        return 'DEPOSIT'
+        return 'Deposit & Earn'
     }
 })
 
