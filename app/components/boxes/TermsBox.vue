@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-card border rounded-xl p-3 sm:p-4 order-3 lg:order-none shadow-lg">
+    <div class="bg-card border rounded-xl p-4 sm:p-6 order-3 lg:order-none shadow-lg">
         <h3 class="text-xl sm:text-2xl font-heading mb-2">Loan Terms</h3>
         <p class="text-gray-2 text-sm sm:text-base mb-4">Crypto-backed mortgage with gradual installments.</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
@@ -8,6 +8,18 @@
                 <div v-if="item.isMonthly" class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-1">
                     <span>${{ monthlyInstallment }}</span>
                     <span class="text-xs sm:text-sm text-gray-400">/mo</span>
+                </div>
+                <div v-else-if="item.isToken"
+                    class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-2">
+                    <span>{{ item.value }}</span>
+                    <a :href="item.link" target="_blank" class="cursor-pointer group">
+                        <img
+                            src="/icons/external.svg"
+                            alt="Block Explorer Link"
+                            class="w-3 h-3 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
+                            style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
+                        />
+                    </a>
                 </div>
                 <div 
                     v-else 
@@ -19,44 +31,6 @@
         
         <!-- Expandable Details -->
         <Accordion type="single" collapsible class="mt-3">
-            <AccordionItem value="details">
-                <AccordionTrigger class="text-sm text-gray-400 hover:text-gray-200">
-                    View Token Details
-                </AccordionTrigger>
-                <AccordionContent>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        <div class="border rounded-lg p-3 bg-background/50">
-                            <div class="text-sm text-gray-400 mb-1">Collateral Token</div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-semibold">{{ COLLATERAL_NAME }}</span>
-                                <a :href="getExplorerTokenAddressLink(COLLATERAL_ADDRESS)" target="_blank" class="cursor-pointer group">
-                                    <img
-                                        src="/icons/external.svg"
-                                        alt="Block Explorer Link"
-                                        class="w-3 h-3 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
-                                        style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
-                                    />
-                                </a>
-                            </div>
-                        </div>
-                        <div class="border rounded-lg p-3 bg-background/50">
-                            <div class="text-sm text-gray-400 mb-1">Credit Token</div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-semibold">{{ CREDIT_NAME }}</span>
-                                <a :href="getExplorerTokenAddressLink(CREDIT_ADDRESS)" target="_blank" class="cursor-pointer group">
-                                    <img
-                                        src="/icons/external.svg"
-                                        alt="Block Explorer Link"
-                                        class="w-3 h-3 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
-                                        style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
-                                    />
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-            
             <AccordionItem value="mortgage-functionality">
                 <AccordionTrigger class="text-sm text-gray-400 hover:text-gray-200">
                     How Does The Mortgage Work?
@@ -117,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { COLLATERAL_ADDRESS, COLLATERAL_NAME, CREDIT_ADDRESS, CREDIT_NAME, LOAN_DURATION_IN_YEARS, LOAN_LTV, MAX_AMOUNT_FORMATTED } from '~/constants/proposalConstants';
+import { COLLATERAL_ADDRESS, COLLATERAL_NAME, CREDIT_ADDRESS, CREDIT_NAME, LOAN_DURATION_IN_YEARS, LOAN_LTV, MAX_AMOUNT_FORMATTED, MINIMAL_APR } from '~/constants/proposalConstants';
 import { getExplorerTokenAddressLink } from '~/constants/links';
 
 const MONTHLY_INSTALLMENTS_LABEL = "Monthly Installments"
@@ -129,7 +103,7 @@ const monthlyInstallment = computed(() => {
     return Math.floor(monthlyAmount).toLocaleString()
 })
 
-// Only show critical terms - details moved to expandable section
+// Terms grid items including token details and minimum fixed rate
 const TERMS_ITEMS = [
     {
         label: 'LTV',
@@ -146,6 +120,25 @@ const TERMS_ITEMS = [
         value: null,
         tooltip: 'Monthly Installment Amount',
         isMonthly: true
+    },
+    {
+        label: 'Minimum Fixed Rate',
+        value: `${MINIMAL_APR}%`,
+        tooltip: 'Minimum Fixed Rate APR'
+    },
+    {
+        label: 'Collateral Token',
+        value: COLLATERAL_NAME,
+        tooltip: 'Collateral Token',
+        isToken: true,
+        link: getExplorerTokenAddressLink(COLLATERAL_ADDRESS)
+    },
+    {
+        label: 'Credit Token',
+        value: CREDIT_NAME,
+        tooltip: 'Credit Token',
+        isToken: true,
+        link: getExplorerTokenAddressLink(CREDIT_ADDRESS)
     }
 ]
 

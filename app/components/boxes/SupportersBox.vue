@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-card border rounded-xl p-3 sm:p-4 order-5 lg:order-none shadow-lg">
+    <div class="bg-card border rounded-xl p-4 sm:p-6 order-5 lg:order-none shadow-lg">
         <div class="mb-4">
             <h3 class="font-heading text-lg sm:text-xl mb-4">Lenders ({{ totalLenders }})</h3>
         </div>

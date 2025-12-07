@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-card border rounded-xl p-3 sm:p-4 order-3 lg:order-none shadow-lg">
+    <div class="bg-card border rounded-xl p-4 sm:p-6 order-3 lg:order-none shadow-lg">
         <div class="mb-3">
             <h3 class="font-heading text-xl sm:text-2xl mb-1">Fund This Loan</h3>
             <p class="text-green-400 text-sm sm:text-base font-semibold">Earn minimum of {{ MINIMAL_APR }}% APR + Exclusive Rewards</p>
@@ -32,10 +32,6 @@
             
             <!-- Trust Signals -->
             <div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-400">
-                <div class="flex items-center gap-1">
-                    <span class="text-green-400">✓</span>
-                    <span>Smart Contract Secured</span>
-                </div>
                 <div class="flex items-center gap-1">
                     <span class="text-green-400">✓</span>
                     <span>Non-Custodial</span>

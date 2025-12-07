@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-card border rounded-xl px-3 sm:px-4 py-2 order-2 lg:order-none shadow-lg">
+    <div class="bg-card border rounded-xl p-4 sm:p-6 order-2 lg:order-none shadow-lg">
         <h3 class="font-heading text-xl sm:text-2xl mb-3">Story</h3>
         <!-- note: using unmount-on-hide="false" to make sure the image is downloaded immediately right after the page is opened -->
         <Accordion :default-value="[ACCORDION_ITEMS_ID.WHAT_IS_BORDEL]" type="multiple" :unmount-on-hide="false">
