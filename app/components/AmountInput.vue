@@ -21,10 +21,9 @@
                     v-model="lendAmount"
                     placeholder="150.23"
                     :disabled="isAmountInputDisabled"
-                    class="w-full h-[40px]"
-                    :class="{ 'border-red-500': isAmountInvalid }"
+                    :class="['w-full', inputHeight, 'border-primary border-2 focus:border-primary-foreground text-right input-txtsize', { 'border-red-500': isAmountInvalid }]"
                 />
-                <Button class="h-[40px]" :disabled="walletBalancePlusUserDeposit <= 0n" @click="handleMaxClick">
+                <Button :class="['h-auto', inputHeight]" :disabled="walletBalancePlusUserDeposit <= 0n" @click="handleMaxClick">
                     Max
                 </Button>
             </div>
@@ -48,6 +47,18 @@ import { useIsMutating } from '@tanstack/vue-query'
 import MutationIds from '~/constants/mutationIds'
 import useUserDepositStore from '~/composables/useUserDepositStore'
 import useProposal from '~/composables/useProposal'
+
+// Accept inputHeight as a prop, default to h-[40px]
+const props = defineProps({
+    prefilledAmount: {
+        type: String,
+        default: ''
+    },
+    inputHeight: {
+        type: String,
+        default: 'h-[40px]'
+    }
+})
 
 const { missingAmount } = useProposal()
 
@@ -168,3 +179,9 @@ const handleMaxClick = () => {
     }
 }
 </script>
+
+<style scoped>
+.input-txtsize {
+    font-size: 2rem; 
+}
+</style>

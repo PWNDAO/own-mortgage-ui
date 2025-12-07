@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mb-4">
-            <p class="mb-2 text-sm sm:text-base">
+            <p class="mb-2 text-sm sm:text-base text-justify">
                 This graph illustrates the loan repayment dynamics and default risk over time.
             </p>
             <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm">

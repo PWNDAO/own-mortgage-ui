@@ -2,35 +2,13 @@
     <div class="bg-card border rounded-xl p-3 sm:p-4 order-3 lg:order-none shadow-lg">
         <div class="mb-3">
             <h3 class="font-heading text-xl sm:text-2xl mb-1">Fund This Loan</h3>
-            <p class="text-green-400 text-sm sm:text-base font-semibold">Earn {{ MINIMAL_APR }}% APR + Exclusive Rewards</p>
+            <p class="text-green-400 text-sm sm:text-base font-semibold">Earn minimum of {{ MINIMAL_APR }}% APR + Exclusive Rewards</p>
         </div>
         <hr class="mb-4"/>
         <div class="mb-3">
-            <AmountInput :prefilled-amount="userDepositFormatted" />
+            <AmountInput :prefilled-amount="userDepositFormatted" input-height="h-[5rem] sm:h-[5rem]" />
             <div v-if="isAmountInputLowerThanUserDeposit" class="mt-2 text-sm text-gray-2">
                 Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdrawFormatted }} {{ CREDIT_NAME }} from your deposit.
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-2 mt-3">
-                <div class="p-4 border rounded-lg grow bg-gradient-to-br from-green-900/20 to-green-900/5 border-green-600/30">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-300 text-sm sm:text-base">Annual Return:</span>
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-4xl sm:text-5xl font-bold text-green-400">{{ MINIMAL_APR }}</span>
-                            <span class="text-2xl sm:text-3xl font-semibold text-green-400">%</span>
-                        </div>
-                    </div>
-                    <div class="text-xs sm:text-sm text-green-300/80 mt-2">
-                        ✓ Earn interest while waiting for loan acceptance
-                    </div>
-                </div>
-
-                <div class="p-3 border rounded-lg flex gap-2 sm:gap-5 items-center bg-background/50">
-                    <span class="text-gray-300 text-sm sm:text-base">Chain:</span>
-                    <div>
-                        <ChainInfo />
-                    </div>
-                </div>
             </div>
             
             <Button 
@@ -42,7 +20,7 @@
                 <div class="flex-1 min-w-0">
                     <div class="text-base sm:text-lg md:text-2xl font-bold text-left break-words">{{ lendButtonText }}</div>
                     <div class="flex items-center gap-1 text-xs sm:text-sm mt-1">
-                        <span v-if="amountToDepositAdditionally > 0n">+ earn {{ MINIMAL_APR }}% or more</span>
+                        <span v-if="amountToDepositAdditionally > 0n">+ earn minimum {{ MINIMAL_APR }}% or more</span>
                     </div>
                 </div>
                 <div class="flex-shrink-0 ml-2">
@@ -64,7 +42,11 @@
                 </div>
                 <div class="flex items-center gap-1">
                     <span class="text-green-400">✓</span>
-                    <span>Withdraw Anytime</span>
+                    <span>Withdraw Anytime Before Execution</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="text-green-400">✓</span>
+                    <span>Meanwhile Earn Yield From AAVE</span>
                 </div>
             </div>
         </div>
