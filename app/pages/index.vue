@@ -45,15 +45,15 @@
 
       <div class="flex flex-col gap-4">
           <!-- Mobile: single column with ordered boxes (using contents so boxes are direct children) -->
-          <!-- Desktop: two columns - DescriptionBox & TermsBox left, ContributeBox right (primary CTA) -->
+          <!-- Desktop: two columns - DescriptionBox & TermsBox left (2/3), ContributeBox right (1/3) (PRIMARY CTA) -->
           <div class="contents lg:flex lg:flex-row lg:gap-4">
-              <!-- Left column: DescriptionBox, TermsBox (SUPPORTING INFO) -->
-              <div class="contents lg:flex lg:flex-col lg:gap-4 lg:flex-1">
+              <!-- Left column: DescriptionBox, TermsBox (SUPPORTING INFO) - 2/3 width -->
+              <div class="contents lg:flex lg:flex-col lg:gap-4 lg:w-2/3">
                   <DescriptionBox />
                   <TermsBox />
               </div>
-              <!-- Right column: ContributeBox, RewardsBox, SupportersBox (PRIMARY ACTION & INCENTIVES) -->
-              <div class="contents lg:flex lg:flex-col lg:gap-4 lg:flex-1">
+              <!-- Right column: ContributeBox, RewardsBox, SupportersBox (PRIMARY ACTION & INCENTIVES) - 1/3 width -->
+              <div class="contents lg:flex lg:flex-col lg:gap-4 lg:w-1/3">
                   <ContributeBox />
                   <RewardsBox />
                   <SupportersBox />

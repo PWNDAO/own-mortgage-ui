@@ -1,37 +1,32 @@
 <template>
-    <div class="bg-card border rounded-xl p-4 sm:p-6 order-3 lg:order-none shadow-lg">
+    <div class="bg-gray-900/30 border rounded-xl p-4 sm:p-6 order-3 lg:order-none shadow-lg hover:bg-gray-800/80 hover:shadow-xl hover:shadow-green-900/20 transition-all duration-300 cursor-text" @click="focusInput">
         <div class="mb-3">
             <h3 class="font-heading text-xl sm:text-2xl mb-1">Fund This Loan</h3>
             <p class="text-green-400 text-sm sm:text-base font-semibold">Earn minimum of {{ MINIMAL_APR }}% APR + Exclusive Rewards</p>
         </div>
         <hr class="mb-4"/>
         <div class="mb-3">
-            <AmountInput :prefilled-amount="userDepositFormatted" input-height="h-[5rem] sm:h-[5rem]" />
+            <AmountInput ref="amountInputRef" placeholder="0.0":prefilled-amount="userDepositFormatted" input-height="h-[5rem] sm:h-[5rem]" :credit-icon="CREDIT_ASSET_ICON" :credit-name="CREDIT_NAME" />
             <div v-if="isAmountInputLowerThanUserDeposit" class="mt-2 text-sm text-gray-2">
-                Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdrawFormatted }} {{ CREDIT_NAME }} from your deposit.
+                Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdrawFormatted }} {{ CREDIT_NAME }} from your commitment.
             </div>
             
             <Button 
                 size="lg" 
-                class="h-auto min-h-[5rem] sm:h-[5rem] w-full flex justify-between items-center mt-3 px-2 sm:px-4 shadow-xl hover:shadow-2xl transition-all duration-300" 
+                class="h-[5rem] sm:h-[5rem] w-full flex items-center mt-3 pl-6 pr-2 sm:pl-8 sm:pr-4 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-bttn overflow-hidden" 
                 :disabled="!canSubmit" 
                 @click="handleDepositClick"
             >
-                <div class="flex-1 min-w-0">
-                    <div class="text-base sm:text-lg md:text-2xl font-bold text-left break-words">{{ lendButtonText }}</div>
+                <div class="w-full min-w-0 overflow-hidden">
+                    <div class="text-base sm:text-lg md:text-2xl font-bold text-left truncate whitespace-nowrap overflow-hidden">{{ lendButtonText }}</div>
                     <div class="flex items-center gap-1 text-xs sm:text-sm mt-1">
-                        <span v-if="amountToDepositAdditionally > 0n">+ earn minimum {{ MINIMAL_APR }}% or more</span>
-                    </div>
-                </div>
-                <div class="flex-shrink-0 ml-2">
-                    <div class="flex justify-end mb-1">
-                        <img :src="CREDIT_ASSET_ICON" :alt="CREDIT_NAME" width="32" height="32" class="w-6 h-6 sm:w-8 sm:h-8">
+                        <!-- <span v-if="amountToDepositAdditionally > 0n">+ earn minimum {{ MINIMAL_APR }}% or more</span> -->
                     </div>
                 </div>
             </Button>
             
             <!-- Trust Signals -->
-            <div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-400">
+            <!-- <div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-400">
                 <div class="flex items-center gap-1">
                     <span class="text-green-400">✓</span>
                     <span>Non-Custodial</span>
@@ -44,7 +39,7 @@
                     <span class="text-green-400">✓</span>
                     <span>Meanwhile Earn Yield From AAVE</span>
                 </div>
-            </div>
+            </div> -->
         </div>
         <NotificationSignupModal ref="notificationModal" :display-open-button="false" />
     </div>
@@ -84,11 +79,35 @@ const { open } = useAppKit();
 
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
+const amountInputRef = ref<any>(null)
+
+const focusInput = () => {
+    if (amountInputRef.value?.$el) {
+        const input = amountInputRef.value.$el.querySelector('input')
+        input?.focus()
+    }
+}
+
 const lendButtonText = computed(() => {
+    // If lendAmount is 0, empty, or undefined
+    if (!lendAmount.value || lendAmount.value === '0' || lendAmount.value === '0.0') {
+        return 'Enter amount'
+    }
+    
     if (userDeposit.value > 0n && amountToDepositAdditionally.value > 0n) {
+        if (Number(amountToDepositAdditionallyFormatted.value) >= 1000000000) {
+            return 'Deposit ' + parseFloat(amountToDepositAdditionallyFormatted.value).toExponential(3) + ' ' + CREDIT_NAME
+        } else {
         return 'Deposit ' + amountToDepositAdditionallyFormatted.value + ' ' + CREDIT_NAME + ' More'
+        }
     } else if (isAmountInputLowerThanUserDeposit.value) {
-        return 'Withdraw ' + amountToWithdrawFormatted.value + ' ' + CREDIT_NAME
+        if (amountToWithdrawFormatted.value === userDepositFormatted.value) {
+            return 'Withdraw All ' + CREDIT_NAME
+        } else if (Number(amountToWithdrawFormatted.value) >= 1000000000) {
+            return 'Withdraw ' + parseFloat(amountToWithdrawFormatted.value).toExponential(3) + ' ' + CREDIT_NAME
+        } else {
+        return 'Withdraw ' + amountToWithdrawFormatted.value + ' ' + CREDIT_NAME 
+        }
     } else if (userDeposit.value === 0n && amountToDepositAdditionally.value > 0n) {
         return 'Deposit & Earn'
     } else {
@@ -237,3 +256,9 @@ const handleDepositClick = async () => {
   await continueFlow()
 }
 </script>
+
+<style scoped>
+    .rounded-bttn {
+        border-radius: 4rem;
+    }
+</style>
