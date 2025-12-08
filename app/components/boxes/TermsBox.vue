@@ -27,6 +27,13 @@
                     <span>{{ item.value }}</span>
                 </div>
             </div>
+            <!-- Chain info on mobile only -->
+            <div class="sm:hidden border rounded-lg p-3 bg-background/50">
+                <div class="text-sm text-gray">Chain</div>
+                <div class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-2">
+                    <ChainInfo />
+                </div>
+            </div>
         </div>
         
         <!-- Expandable Details -->
@@ -37,7 +44,7 @@
                 </AccordionTrigger>
                 <AccordionContent>
                     <p class="leading-relaxed text-sm sm:text-base mb-4 text-justify">
-                        This mortgage is a decentralized, crowdfunded DeFi loan designed to bootstrap community projects by leveraging crypto collateral (weETH) with a 75% loan-to-value ratio over two years. 
+                        This mortgage is a decentralized, crowdfunded DeFi loan designed to bootstrap community projects by leveraging crypto collateral (weETH) with a 75% loan-to-value ratio over five years. 
                         Supporters lend stablecoins (USDC) at a modest interest rate of 2%, receiving gradual loan repayments along with non-monetary rewards like memberships and event access. 
                         By distributing risk across many lenders instead of relying on one, this setup encourages community involvement and ensures more accessible and sustainable funding.
                     </p>

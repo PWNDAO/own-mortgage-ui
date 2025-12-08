@@ -23,7 +23,7 @@
                 type="number"
                 placeholder="0.0"
                 :disabled="isAmountInputDisabled"
-                step="0.01"
+                step="1"
                 min="0"
                 :class="['w-full', inputHeight, 'border-none focus:border-none focus:outline-none focus:ring-0 input-txtsize [&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&[type=number]]:[appearance:textfield]', creditIcon ? 'pr-12 sm:pr-14' : '', { 'border-red-500': isAmountInvalid }]"
             />

@@ -17,7 +17,7 @@
         </template>
 
 
-        <div class="overflow-y-auto max-h-72 md:max-h-48">
+        <div class="overflow-y-auto max-h-72 md:max-h-48 custom-scrollbar">
             <template v-if="isLoading && !lenders?.length">
                 <div v-for="i in 5" :key="i" class="py-1">
                     <Skeleton class="h-4 w-full" />
@@ -101,3 +101,28 @@ const formatAmount = (amount: bigint) => {
     return rounded.toLocaleString('en-US')
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+/* Firefox */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 transparent;
+}
+</style>

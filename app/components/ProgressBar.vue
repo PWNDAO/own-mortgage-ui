@@ -1,14 +1,14 @@
 <template>
     <div>
         <!-- Stats Row -->
-        <div class="flex justify-between items-center mb-3 text-sm sm:text-base">
+        <div class="hidden sm:flex justify-between items-center mb-3 text-sm sm:text-base">
             <div class="flex items-center gap-2">
                 <span class="text-gray-400">Progress:</span>
                 <span class="font-bold text-white">{{ progress }}% funded</span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="text-gray-400">Remaining:</span>
-                <span class="font-bold text-yellow-400">{{ remainingFormatted }} {{ CREDIT_NAME }}</span>
+                <span class="font-bold text-white">{{ remainingFormatted }} {{ CREDIT_NAME }}</span>
             </div>
         </div>
         
@@ -20,7 +20,7 @@
                 <img width="24" height="24" :src="CREDIT_ASSET_ICON" :alt="CREDIT_NAME" />
                 <span> {{ CREDIT_NAME }}</span>
             </div>
-            <div class="absolute -top-7" :style="{ left: `${Number(MINIMAL_CREDIT_AMOUNT_PERCENTAGE) * 100}%`, transform: 'translateX(-50%)' }">
+            <div class="hidden sm:block absolute -top-7" :style="{ left: `${Number(MINIMAL_CREDIT_AMOUNT_PERCENTAGE) * 100}%`, transform: 'translateX(-50%)' }">
                 <div class="text-xs text-white border border-white px-1 bg-gray-900 rounded">{{ MINIMAL_CREDIT_AMOUNT_PERCENTAGE_FORMATTED }}% Min</div>
                 <div class="relative w-px h-2.5 left-1/2 transform -translate-x-1/2">
                     <div class="absolute top-0 w-full h-0.75 bg-white"></div>

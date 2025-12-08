@@ -8,7 +8,7 @@
       </div>
 
       <!-- Chain Info Above -->
-      <div class="mb-4 flex justify-end -mt-12">
+      <div class="hidden sm:flex mb-4 justify-end -mt-12">
           <div class="p-3 border rounded-lg flex gap-2 sm:gap-5 items-center bg-background/50 w-fit">
               <span class="text-gray-300 text-sm sm:text-base">Chain:</span>
               <div>
@@ -21,22 +21,21 @@
           <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
               <div class="flex-1">
                   <h3 class="text-xl sm:text-2xl font-heading mb-1">Funding Progress</h3>
-                  <p class="text-gray-2 text-sm sm:text-base">Fund this DeFi loan and become part of onchainhistory! </p>
+                  <p class="text-gray-2 text-sm sm:text-base">Fund this this community and become part of onchain history.</p>
               </div>
               
               <!-- Annual Return -->
-              <div class="flex-1 flex items-center justify-center">
+              <div class="flex-1 flex items-center justify-center w-full">
                   <div class="flex items-center gap-1 px-3 py-2 bg-gradient-to-br from-green-900/20 to-green-900/5 border border-green-600/30 rounded-lg">
-                      <span class="text-2xl text-green-400">Earn</span>
+                      <span class="text-2xl text-green-400">Get <a href="#rewards-section" class="underline hover:text-green-300 transition-colors cursor-pointer" @click.prevent="scrollToRewards">rewards</a> +</span>
                       <span class="text-2xl font-bold text-green-400">2% APR</span>
-                      <span class="text-2xl text-green-400">+ rewards</span>
                   </div>
               </div>
               
-              <div class="flex-1 flex items-center justify-end">
-                  <div class="flex items-center gap-2 px-3 py-2 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-                      <span class="text-yellow-400 text-sm font-semibold">⏱ Deadline:</span>
-                      <DeadlineCountdown class="text-yellow-400 font-bold text-base sm:text-lg" />
+              <div class="hidden sm:flex flex-1 items-center justify-end">
+                  <div class="flex items-center gap-2 py-2" :class="daysRemaining < 7 ? 'px-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg' : 'px-0'">
+                      <span class="text-sm font-semibold" :class="daysRemaining < 7 ? 'text-yellow-400' : 'text-gray-400'">⏱ Deadline:</span>
+                      <DeadlineCountdown class="font-bold text-base sm:text-lg" :class="daysRemaining < 7 ? 'text-yellow-400' : 'text-white'" />
                   </div>
               </div>
           </div>
@@ -64,4 +63,23 @@
 </template>
 
 <script setup lang="ts">
+import { PROPOSAL_EXPIRATION } from '~/constants/proposalConstants'
+
+const daysRemaining = computed(() => {
+    const deadline = new Date(PROPOSAL_EXPIRATION * 1000).getTime()
+    const now = new Date().getTime()
+    const distance = deadline - now
+    return Math.floor(distance / (1000 * 60 * 60 * 24))
+})
+
+const scrollToRewards = () => {
+    const rewardsSection = document.getElementById('rewards-section')
+    if (rewardsSection) {
+        rewardsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        // Update hash after smooth scroll starts
+        setTimeout(() => {
+            window.location.hash = 'rewards-section'
+        }, 100)
+    }
+}
 </script>

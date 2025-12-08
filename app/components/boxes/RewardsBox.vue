@@ -1,5 +1,10 @@
 <template>
-    <div class="bg-card border rounded-xl p-4 sm:p-6 order-4 lg:order-none shadow-lg">
+    <div 
+        id="rewards-section" 
+        ref="rewardsBoxRef"
+        class="bg-card border rounded-xl p-4 sm:p-6 order-4 lg:order-none shadow-lg transition-all duration-1000"
+        :class="{ 'bg-gray-800/80 shadow-xl shadow-green-900/20': isHighlighted }"
+    >
         <h3 class="font-heading text-xl sm:text-2xl mb-2">Exclusive Rewards</h3>
         <div class="mb-4 text-sm sm:text-base text-justify">
             Lend and get rewards! Get various rewards based on the amount of liquidity you are able to lend. <b>Remember you are only lending, not donating this amount</b> and the loan is slowly repayed every few months. You can claim any time!
@@ -78,6 +83,33 @@ const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
 
 const notificationModalRef = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
+const rewardsBoxRef = ref<HTMLElement | null>(null)
+const isHighlighted = ref(false)
+
+// Watch for hash changes to trigger highlight effect
+onMounted(() => {
+    const handleHashChange = () => {
+        if (window.location.hash === '#rewards-section') {
+            isHighlighted.value = true
+            setTimeout(() => {
+                isHighlighted.value = false
+            }, 3000)
+        }
+    }
+    
+    // Check on mount if already navigated to hash
+    if (window.location.hash === '#rewards-section') {
+        handleHashChange()
+    }
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange)
+    
+    // Cleanup
+    onUnmounted(() => {
+        window.removeEventListener('hashchange', handleHashChange)
+    })
+})
 
 const isAmountInputFilled = computed(() => {
     return lendAmount.value && lendAmount.value.trim() !== ''
