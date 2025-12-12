@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-medium">Total Amount to Lend</label>
+            <label class="text-sm font-medium">{{ lendAmount === userDepositFormatted ? 'Total Amount Committed Now' : 'Total Amount to Lend' }}</label>
             <div class="flex items-center gap-2">
                 <div
                     v-if="walletBalancePlusUserDeposit > 0n"
@@ -21,9 +21,9 @@
             <Input
                 v-model="lendAmount"
                 type="number"
-                placeholder="0.0"
+                placeholder="-"
                 :disabled="isAmountInputDisabled"
-                step="1"
+                step="1000"
                 min="0"
                 :class="['w-full', inputHeight, 'border-none focus:border-none focus:outline-none focus:ring-0 input-txtsize [&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&[type=number]]:[appearance:textfield]', creditIcon ? 'pr-12 sm:pr-14' : '', { 'border-red-500': isAmountInvalid }]"
             />
@@ -50,7 +50,7 @@ import useUserDepositStore from '~/composables/useUserDepositStore'
 import useProposal from '~/composables/useProposal'
 
 // Accept inputHeight as a prop, default to h-[40px]
-const props = defineProps({
+defineProps({
     prefilledAmount: {
         type: String,
         default: ''
@@ -88,15 +88,16 @@ watch(() => amountInputStore.lendAmount, (newVal) => {
 
 // Sync store with local ref
 watch(lendAmount, (newVal) => {
-    // Ensure it's always a string
-    const stringVal = String(newVal || '')
+    // Ensure it's always a string, but preserve '0' as a valid value
+    const stringVal = newVal === null || newVal === undefined ? '' : String(newVal)
     if (amountInputStore.lendAmount !== stringVal) {
         amountInputStore.lendAmount = stringVal
     }
 })
 
+// Pre-fill with user deposit when they have one
 watch(userDepositFormatted, (newVal) => {
-    if (newVal !== '0' && (lendAmount.value === '0' || lendAmount.value === '0.0' || !lendAmount.value)) {
+    if (newVal !== '0' && !lendAmount.value) {
         lendAmount.value = newVal
     }
 }, { immediate: true })

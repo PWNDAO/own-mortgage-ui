@@ -45,6 +45,17 @@ export default function useLend() {
         return withdrawTxReceipt
     }
 
+    const redeemAll = async (withdrawAmount: bigint, step: ToastStep) => {
+        const withdrawAllTxReceipt = await sendTransaction({
+            abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+            functionName: 'redeem',
+            args: [withdrawAmount, userAddress.value!, userAddress.value!], 
+            address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+            chainId: connectedChainId.value,
+        }, { step })
+        return withdrawAllTxReceipt
+    }
+
     const deposit = async (step: ToastStep) => {
         const txReceipt = await sendTransaction({
             abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
@@ -59,6 +70,7 @@ export default function useLend() {
     return { 
         approveForDepositIfNeeded, 
         deposit,
-        withdraw
+        withdraw,
+        redeemAll
     }
 }

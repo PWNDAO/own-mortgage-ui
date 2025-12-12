@@ -1,5 +1,6 @@
 import to from '@/lib/await-to-js'
 import type { Abi, ContractFunctionArgs, ContractFunctionName, TransactionReceipt } from 'viem'
+// TODO is it fine to import from @wagmi/core/actions instead of @wagmi/vue/actions?
 import { getAccount, getBlockNumber, getPublicClient, getTransaction, getTransactionReceipt, switchChain, waitForTransactionReceipt, watchContractEvent, writeContract } from '@wagmi/core/actions'
 import type { WriteContractVariables } from '@wagmi/core/query'
 import type { AnyFunction, IntervalId } from '@/typing/customTypes'
@@ -21,6 +22,8 @@ export interface SendTransactionOptions {
   step?: ToastStep
 }
 
+// TODO change type of transaction parameter to always have chainId filled, right now it's marked as optional
+//  and also allows undefined value, which we should not allow
 export async function sendTransaction<
   const TAbi extends Abi,
   TFunctionName extends ContractFunctionName<TAbi, 'nonpayable' | 'payable'>,
@@ -29,14 +32,14 @@ export async function sendTransaction<
   transaction: WriteContractVariables<TAbi, TFunctionName, TArgs, WagmiConfig, WagmiConfig['chains'][number]['id']>,
   { hooks, step }: SendTransactionOptions = {},
 ): Promise<TransactionReceipt> {
-  console.log('Starting to send a transaction with following parameters:')
-  console.log(transaction)
+  // console.log('Starting to send a transaction with following parameters:')
+  // console.log(transaction)
 
   const connectedChainId = getAccount(wagmiConfig).chainId
   console.log(`connectedChainId=${connectedChainId}; transaction.chainId=${transaction.chainId}`)
 
   if (connectedChainId !== transaction.chainId) {
-    console.log(`Switching chain from ${connectedChainId} to ${transaction.chainId}.`)
+    // console.log(`Switching chain from ${connectedChainId} to ${transaction.chainId}.`)
     const switchedChain = await switchChain(wagmiConfig, { chainId: transaction.chainId! })
     if (switchedChain.id !== transaction.chainId) {
       throw new Error('User denied switching chains before sending a tx.')

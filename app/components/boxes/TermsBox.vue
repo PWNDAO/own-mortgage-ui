@@ -5,12 +5,17 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
             <div v-for="item in TERMS_ITEMS" :key="item.label" class="border rounded-lg p-3 bg-background/50">
                 <div class="text-sm text-gray">{{ item.label }}</div>
-                <div v-if="item.isMonthly" class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-1">
+                <div
+                    v-if="item.isMonthly"
+                    class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-1"
+                >
                     <span>${{ monthlyInstallment }}</span>
                     <span class="text-xs sm:text-sm text-gray-400">/mo</span>
                 </div>
-                <div v-else-if="item.isToken"
-                    class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-2">
+                <div
+                    v-else-if="item.isToken"
+                    class="text-lg sm:text-xl md:text-2xl font-semibold flex items-center gap-2"
+                >
                     <span>{{ item.value }}</span>
                     <a :href="item.link" target="_blank" class="cursor-pointer group">
                         <img
@@ -149,7 +154,7 @@ const TERMS_ITEMS = [
     }
 ]
 
-const isCollateralOrCreditNameItem = (itemLabel: string) => {
+const _isCollateralOrCreditNameItem = (_itemLabel: string) => {
     return false // No longer needed in main grid
 }
 </script>

@@ -161,7 +161,7 @@ const isEligibleForReward = (reward: number) => {
     return amount >= reward
 }
 
-const getMissingAmount = (reward: number) => {
+const _getMissingAmount = (reward: number) => {
     const amount = Number(lendAmount.value) || 0
     const missing = reward - amount
     return missing > 0 ? missing : 0

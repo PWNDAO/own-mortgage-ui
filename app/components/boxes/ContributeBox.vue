@@ -6,9 +6,9 @@
         </div>
         <hr class="mb-4"/>
         <div class="mb-3">
-            <AmountInput ref="amountInputRef" placeholder="0.0":prefilled-amount="userDepositFormatted" input-height="h-[5rem] sm:h-[5rem]" :credit-icon="CREDIT_ASSET_ICON" :credit-name="CREDIT_NAME" />
+            <AmountInput ref="amountInputRef" placeholder="0.0" :prefilled-amount="userDepositFormatted" input-height="h-[5rem] sm:h-[5rem]" :credit-icon="CREDIT_ASSET_ICON" :credit-name="CREDIT_NAME" />
             <div v-if="isAmountInputLowerThanUserDeposit" class="mt-2 text-sm text-gray-2">
-                Setting amount to {{ lendAmount }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdrawFormatted }} {{ CREDIT_NAME }} from your commitment.
+                Setting amount to {{ lendAmountFormatted }} {{ CREDIT_NAME }} will withdraw {{ amountToWithdrawFormatted }} {{ CREDIT_NAME }} from your commitment.
             </div>
             
             <Button 
@@ -25,21 +25,6 @@
                 </div>
             </Button>
             
-            <!-- Trust Signals -->
-            <!-- <div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-400">
-                <div class="flex items-center gap-1">
-                    <span class="text-green-400">✓</span>
-                    <span>Non-Custodial</span>
-                </div>
-                <div class="flex items-center gap-1">
-                    <span class="text-green-400">✓</span>
-                    <span>Withdraw Anytime Before Execution</span>
-                </div>
-                <div class="flex items-center gap-1">
-                    <span class="text-green-400">✓</span>
-                    <span>Meanwhile Earn Yield From AAVE</span>
-                </div>
-            </div> -->
         </div>
         <NotificationSignupModal ref="notificationModal" :display-open-button="false" />
     </div>
@@ -62,7 +47,7 @@ import useUserDepositStore from '~/composables/useUserDepositStore';
 const amountInputStore = useAmountInputStore()
 
 const userDepositStore = useUserDepositStore()
-const { userDeposit, userDepositFormatted } = storeToRefs(userDepositStore)
+const { userShares, userDeposit, userDepositFormatted } = storeToRefs(userDepositStore)
 const { 
     lendAmount, 
     lendAmountFormatted, 
@@ -79,7 +64,7 @@ const { open } = useAppKit();
 
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
-const amountInputRef = ref<any>(null)
+const amountInputRef = ref<InstanceType<typeof AmountInput> | null>(null)
 
 const focusInput = () => {
     if (amountInputRef.value?.$el) {
@@ -89,11 +74,6 @@ const focusInput = () => {
 }
 
 const lendButtonText = computed(() => {
-    // If lendAmount is 0, empty, or undefined
-    if (!lendAmount.value || lendAmount.value === '0' || lendAmount.value === '0.0') {
-        return 'Enter amount'
-    }
-    
     if (userDeposit.value > 0n && amountToDepositAdditionally.value > 0n) {
         if (Number(amountToDepositAdditionallyFormatted.value) >= 1000000000) {
             return 'Deposit ' + parseFloat(amountToDepositAdditionallyFormatted.value).toExponential(3) + ' ' + CREDIT_NAME
@@ -111,7 +91,7 @@ const lendButtonText = computed(() => {
     } else if (userDeposit.value === 0n && amountToDepositAdditionally.value > 0n) {
         return 'Deposit & Earn'
     } else {
-        return 'Deposit & Earn'
+        return 'Adjust commitment'
     }
 })
 
@@ -129,7 +109,7 @@ const walletBalancePlusUserDeposit = computed(() => {
 })
 
 const canSubmit = computed(() => {
-    if (isApproving.value || isDepositing.value || isWithdrawing.value || lendAmount.value === '') {
+    if (isApproving.value || isDepositing.value || isWithdrawing.value || isWithdrawingAll.value || lendAmount.value === '') {
         return false
     }
 
@@ -137,7 +117,14 @@ const canSubmit = computed(() => {
         return true
     }
 
-    if (!walletBalance.value) {
+    // Allow withdrawal when user has deposit and wants to withdraw (amount is lower than deposit)
+    // This includes empty string or '0' which means withdraw all
+    if (userDeposit.value && userDeposit.value > 0n && isAmountInputLowerThanUserDeposit.value) {
+        return true
+    }
+
+    // Don't allow submission if input is empty and user has no deposit
+    if (lendAmount.value === '' && (!userDeposit.value || userDeposit.value === 0n)) {
         return false
     }
 
@@ -166,7 +153,7 @@ const canSubmit = computed(() => {
 const toast = ref<Toast>()
 let continueFlow: () => Promise<void> | undefined
 
-const { approveForDepositIfNeeded, deposit, withdraw } = useLend()
+const { approveForDepositIfNeeded, deposit, withdraw, redeemAll } = useLend()
 
 const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsync } = useMutation({
     mutationKey: [MutationIds.ApproveForDepositIfNeeded],
@@ -180,6 +167,17 @@ const { isPending: isWithdrawing, mutateAsync: withdrawMutateAsync } = useMutati
     mutationKey: [MutationIds.Withdraw],
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await withdraw(parseUnits(amountToWithdrawFormatted.value, CREDIT_DECIMALS), step)
+    },
+    onSuccess() {
+        refetchTotalDepositedAssets()
+    },
+    throwOnError: true,
+})
+
+const { isPending: isWithdrawingAll, mutateAsync: withdrawAllMutateAsync } = useMutation({
+    mutationKey: [MutationIds.WithdrawAll],
+    mutationFn: async ({ step }: { step: ToastStep }) => {
+        await redeemAll(userShares.value, step)
     },
     onSuccess() {
         refetchTotalDepositedAssets()
@@ -221,6 +219,15 @@ const handleDepositClick = async () => {
     }
 
     if (isAmountInputLowerThanUserDeposit.value) {
+        if (amountToWithdrawFormatted.value === userDepositFormatted.value) {
+            steps.push(new ToastStep({
+                text: `Withdrawing all your committed ${CREDIT_NAME}...`,
+                async fn(step) {
+                    await withdrawAllMutateAsync({ step })
+                    return true
+                }
+            }))
+        } else {
         steps.push(new ToastStep({
             text: `Withdrawing ${amountToWithdrawFormatted.value} ${CREDIT_NAME}...`,
             async fn(step) {
@@ -228,6 +235,7 @@ const handleDepositClick = async () => {
                 return true
             }
         }))
+    }
     } else {
         let stepText
         if (userDeposit.value > 0n) {

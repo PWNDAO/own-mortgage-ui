@@ -2,7 +2,7 @@
   <div>
       <div class="relative text-center pt-3 sm:pt-2 pb-4 md:pb-6">
           <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-3xl font-beon">
-              <span class="text-bordel-green">BORDEL</span> HACKERSPACE
+              FUNDING A <span class="text-bordel-green">HACKERSPACE</span> 
           </h1>
           <h2 class="text-lg sm:text-xl md:text-2xl mt-1 md:mt-2 font-screener">FIRST EVER PURE DEFI MORTGAGE</h2>
       </div>

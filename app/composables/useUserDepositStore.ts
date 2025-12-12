@@ -71,6 +71,7 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
     })
 
     return {
+        userShares,
         userDeposit,
         userDepositFormatted,
         userDepositFormattedDecimals,
