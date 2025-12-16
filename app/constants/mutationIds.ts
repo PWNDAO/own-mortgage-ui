@@ -1,6 +1,7 @@
 enum MutationIds {
     ApproveForDepositIfNeeded = 'approveForDepositIfNeeded',
     Deposit = 'deposit',
+    DepositWithBatchedApproval = 'depositWithBatchedApproval',
     Withdraw = 'withdraw',
     WithdrawAll = 'withdrawAll',
     ApproveForAcceptIfNeeded = 'approveForAcceptIfNeeded',

@@ -64,7 +64,7 @@ const { open } = useAppKit();
 
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
-const amountInputRef = ref<InstanceType<typeof AmountInput> | null>(null)
+const amountInputRef = ref<any>(null)
 
 const focusInput = () => {
     if (amountInputRef.value?.$el) {
@@ -109,7 +109,7 @@ const walletBalancePlusUserDeposit = computed(() => {
 })
 
 const canSubmit = computed(() => {
-    if (isApproving.value || isDepositing.value || isWithdrawing.value || isWithdrawingAll.value || lendAmount.value === '') {
+    if (isApproving.value || isDepositing.value || isBatchDepositing.value || isWithdrawing.value || isWithdrawingAll.value || lendAmount.value === '') {
         return false
     }
 
@@ -153,12 +153,24 @@ const canSubmit = computed(() => {
 const toast = ref<Toast>()
 let continueFlow: () => Promise<void> | undefined
 
-const { approveForDepositIfNeeded, deposit, withdraw, redeemAll } = useLend()
+const { approveForDepositIfNeeded, deposit, depositWithBatchedApproval, withdraw, redeemAll } = useLend()
 
 const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsync } = useMutation({
     mutationKey: [MutationIds.ApproveForDepositIfNeeded],
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await approveForDepositIfNeeded(step)
+    },
+    throwOnError: true,
+})
+
+const { isPending: isBatchDepositing, mutateAsync: depositWithBatchedApprovalMutateAsync } = useMutation({
+    mutationKey: [MutationIds.DepositWithBatchedApproval],
+    mutationFn: async ({ step }: { step: ToastStep }) => {
+        await depositWithBatchedApproval(step)
+    },
+    onSuccess() {
+        refetchTotalDepositedAssets()
+        notificationModal.value?.openModal()
     },
     throwOnError: true,
 })
@@ -208,15 +220,6 @@ const handleDepositClick = async () => {
 
   if (toast.value?.id !== actionId) {
     const steps: ToastStep[] = []
-    if (!isAmountInputLowerThanUserDeposit.value) {
-        steps.push(new ToastStep({
-            text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
-            async fn(step) {
-                await approveForDepositIfNeededMutateAsync({ step })
-                return true
-            }
-        }))
-    }
 
     if (isAmountInputLowerThanUserDeposit.value) {
         if (amountToWithdrawFormatted.value === userDepositFormatted.value) {
@@ -247,7 +250,7 @@ const handleDepositClick = async () => {
         steps.push(new ToastStep({
             text: stepText,
             async fn(step) {
-                await depositMutateAsync({ step })
+                await depositWithBatchedApprovalMutateAsync({ step })
                 return true
             },
         }))
