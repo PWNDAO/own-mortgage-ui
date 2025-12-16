@@ -40,6 +40,7 @@ export class ToastStep {
   status: ToastStepStatus
   txHash?: Hex
   isRunningLong?: boolean
+  isBatched?: boolean // Indicates this step runs simultaneously with other batched steps
 
   constructor(step: PartialWithRequired<ToastStep, 'text' | 'fn'>) {
     this.text = step.text
@@ -48,6 +49,7 @@ export class ToastStep {
     this.status = step.status || ToastStepStatus.INACTIVE
     this.txHash = step.txHash
     this.isRunningLong = step.isRunningLong ?? false
+    this.isBatched = step.isBatched ?? false
   }
 }
 
@@ -102,6 +104,57 @@ export class Toast<ToastAction extends ToastActionId = ToastActionId> {
     this.customBottomComponent = toast.customBottomComponent
     this.isAlwaysClosable = toast.isAlwaysClosable ?? false
     this.hideFooter = toast.hideFooter ?? false
+  }
+
+  /**
+   * Get all steps that are part of the same batch as the given step index
+   * Steps are considered batched if they share the same txHash or have the isBatched flag
+   */
+  getBatchedSteps(stepIndex: number): ToastStep[] {
+    const step = this.steps[stepIndex]
+    if (!step) return []
+
+    const batchedSteps: ToastStep[] = [step]
+    
+    console.log(`[Toast.getBatchedSteps] Checking step ${stepIndex}: isBatched=${step.isBatched}, txHash=${step.txHash}`)
+    
+    if (step.isBatched || step.txHash) {
+      // Find all consecutive batched steps
+      for (let i = stepIndex + 1; i < this.steps.length; i++) {
+        const nextStep = this.steps[i]
+        if (!nextStep) break
+        
+        // Steps are batched if they either have isBatched flag or share the same txHash
+        const isSameBatch = nextStep.isBatched || (step.txHash && nextStep.txHash === step.txHash)
+        
+        console.log(`[Toast.getBatchedSteps] Checking step ${i}: isBatched=${nextStep.isBatched}, txHash=${nextStep.txHash}, isSameBatch=${isSameBatch}`)
+        
+        if (isSameBatch) {
+          batchedSteps.push(nextStep)
+        } else {
+          break
+        }
+      }
+    }
+    
+    console.log(`[Toast.getBatchedSteps] Found ${batchedSteps.length} batched steps total`)
+    
+    return batchedSteps
+  }
+
+  /**
+   * Synchronize the status of all batched steps to match the given status
+   */
+  syncBatchedStepsStatus(stepIndex: number, status: ToastStepStatus, error?: Error): void {
+    const batchedSteps = this.getBatchedSteps(stepIndex)
+    console.log(`[Toast.syncBatchedStepsStatus] Syncing ${batchedSteps.length} steps to status: ${status}`)
+    batchedSteps.forEach((step, idx) => {
+      console.log(`[Toast.syncBatchedStepsStatus] Step ${stepIndex + idx} status: ${step.status} -> ${status}`)
+      step.status = status
+      if (error) {
+        step.error = error
+      }
+    })
   }
 }
 

@@ -3,14 +3,31 @@ import PWN_CROWDSOURCE_LENDER_VAULT_ABI from "~/assets/abis/v1.5/PWNCrowdsourceL
 import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from "~/constants/addresses"
 import { CREDIT_ADDRESS } from "~/constants/proposalConstants"
 import { useAccount } from "@wagmi/vue"
-import { readContract, sendCalls, waitForTransactionReceipt } from "@wagmi/core/actions"
+import { readContract } from "@wagmi/core/actions"
 import { wagmiConfig } from "~/config/appkit"
-import { sendTransaction } from "./useTransactions"
+import { sendTransaction, sendBatchTransaction } from "./useTransactions"
 import type { ToastStep } from "~/components/ui/toast/useToastsStore"
 
 export default function useLend() {
     const amountInputStore = useAmountInputStore()
     const { address: userAddress, chainId: connectedChainId } = useAccount()
+
+    const checkApprovalNeeded = async () => {
+        try {
+            const currentAllowance = await readContract(wagmiConfig, {
+                abi: erc20Abi,
+                functionName: 'allowance',
+                args: [userAddress.value!, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS],
+                address: CREDIT_ADDRESS,
+                chainId: connectedChainId.value,
+            })
+
+            return currentAllowance < amountInputStore.lendAmountBigInt
+        } catch (error) {
+            console.error('Error checking allowance:', error)
+            return true // Assume approval needed if we can't check
+        }
+    }
 
     const approveForDepositIfNeeded = async (step: ToastStep) => {
         const currentAllowance = await readContract(wagmiConfig, {
@@ -67,32 +84,32 @@ export default function useLend() {
         return txReceipt
     }
 
-    const depositWithBatchedApproval = async (step: ToastStep) => {
+    const depositWithBatchedApproval = async (approveStep: ToastStep | undefined, depositStep: ToastStep) => {
+        if (!approveStep) {
+            // If no approval step, just do a regular deposit
+            return await sendTransaction({
+                abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+                functionName: 'deposit',
+                args: [amountInputStore.amountToDepositAdditionally, userAddress.value!],
+                address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+                chainId: connectedChainId.value,
+            }, { step: depositStep })
+        }
+
         try {
             const calls = []
-            
-            // Check if approval is needed
-            const currentAllowance = await readContract(wagmiConfig, {
-                abi: erc20Abi,
-                functionName: 'allowance',
-                args: [userAddress.value!, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS],
-                address: CREDIT_ADDRESS,
-                chainId: connectedChainId.value,
-            })
 
-            // Add approve call if needed
-            if (currentAllowance < amountInputStore.lendAmountBigInt) {
-                const approveCallData = encodeFunctionData({
-                    abi: erc20Abi,
-                    functionName: 'approve',
-                    args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountInputStore.lendAmountBigInt],
-                })
-                
-                calls.push({
-                    to: CREDIT_ADDRESS,
-                    data: approveCallData,
-                })
-            }
+            // Add approve call
+            const approveCallData = encodeFunctionData({
+                abi: erc20Abi,
+                functionName: 'approve',
+                args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountInputStore.lendAmountBigInt],
+            })
+            
+            calls.push({
+                to: CREDIT_ADDRESS,
+                data: approveCallData,
+            })
 
             // Add deposit call
             const depositCallData = encodeFunctionData({
@@ -106,29 +123,24 @@ export default function useLend() {
                 data: depositCallData,
             })
 
-            // Try to send batched calls
-            const { id: batchId } = await sendCalls(wagmiConfig, {
-                calls,
-                chainId: connectedChainId.value,
-            })
-            
-            // Update step with batch ID
-            step.txHash = batchId as `0x${string}`
-            
-            // Wait for batch to complete
-            const txReceipt = await waitForTransactionReceipt(wagmiConfig, {
-                hash: batchId as `0x${string}`,
-                chainId: connectedChainId.value,
+            // Send batch transaction using the new helper function
+            const txReceipt = await sendBatchTransaction(calls, {
+                steps: [approveStep, depositStep],
+                chainId: connectedChainId.value!,
             })
             
             return txReceipt
         } catch (error) {
-            console.error(error);
+            console.error(error)
             // Fallback: if wallet doesn't support sendCalls, use traditional two-step approach
             console.warn('Wallet does not support batched transactions (EIP-5792), falling back to sequential transactions', error)
             
+            // Mark steps as NOT batched (sequential)
+            approveStep.isBatched = false
+            depositStep.isBatched = false
+            
             // First approve if needed
-            await approveForDepositIfNeeded(step)
+            await approveForDepositIfNeeded(approveStep)
             
             // Then deposit
             const txReceipt = await sendTransaction({
@@ -137,13 +149,14 @@ export default function useLend() {
                 args: [amountInputStore.amountToDepositAdditionally, userAddress.value!],
                 address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
                 chainId: connectedChainId.value,
-            }, { step })
+            }, { step: depositStep })
             
             return txReceipt
         }
     }
 
     return { 
+        checkApprovalNeeded,
         approveForDepositIfNeeded, 
         deposit,
         depositWithBatchedApproval,

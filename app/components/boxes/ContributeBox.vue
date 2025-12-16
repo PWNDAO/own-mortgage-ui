@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
 import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS, CREDIT_ASSET_ICON, PROPOSAL_CHAIN_ID, MINIMAL_APR } from '~/constants/proposalConstants';
+import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from '~/constants/addresses';
 import { erc20Abi, parseUnits, type Address } from 'viem';
 import useAmountInputStore from '~/composables/useAmountInputStore';
 import { useMutation } from '@tanstack/vue-query';
@@ -153,7 +154,7 @@ const canSubmit = computed(() => {
 const toast = ref<Toast>()
 let continueFlow: () => Promise<void> | undefined
 
-const { approveForDepositIfNeeded, deposit, depositWithBatchedApproval, withdraw, redeemAll } = useLend()
+const { checkApprovalNeeded, approveForDepositIfNeeded, deposit, depositWithBatchedApproval, withdraw, redeemAll } = useLend()
 
 const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsync } = useMutation({
     mutationKey: [MutationIds.ApproveForDepositIfNeeded],
@@ -165,8 +166,8 @@ const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsyn
 
 const { isPending: isBatchDepositing, mutateAsync: depositWithBatchedApprovalMutateAsync } = useMutation({
     mutationKey: [MutationIds.DepositWithBatchedApproval],
-    mutationFn: async ({ step }: { step: ToastStep }) => {
-        await depositWithBatchedApproval(step)
+    mutationFn: async ({ approveStep, depositStep }: { approveStep: ToastStep | undefined, depositStep: ToastStep }) => {
+        await depositWithBatchedApproval(approveStep, depositStep)
     },
     onSuccess() {
         refetchTotalDepositedAssets()
@@ -240,20 +241,54 @@ const handleDepositClick = async () => {
         }))
     }
     } else {
-        let stepText
-        if (userDeposit.value > 0n) {
-            stepText = `Depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...`
-        } else {
-            stepText = `Depositing ${lendAmount.value} ${CREDIT_NAME}...`
-        }
+        // Check if approval is needed
+        const needsApproval = await checkApprovalNeeded()
         
-        steps.push(new ToastStep({
-            text: stepText,
-            async fn(step) {
-                await depositWithBatchedApprovalMutateAsync({ step })
+        // Create approve step only if needed
+        let approveStep: ToastStep | undefined
+
+        if (needsApproval) {
+            approveStep = new ToastStep({
+                text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
+                fn: async () => true, // Will be set below
+                isBatched: true, // Mark as batched
+            })
+            steps.push(approveStep)
+
+            // Create deposit step
+            let depositText
+            if (userDeposit.value > 0n) {
+                depositText = `Depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...`
+            } else {
+                depositText = `Depositing ${lendAmount.value} ${CREDIT_NAME}...`
+            }
+            
+            const depositStep = new ToastStep({
+                text: depositText,
+                fn: async () => true, // No-op, will be executed by approveStep
+                isBatched: true, // Mark as batched
+            })
+            
+            steps.push(depositStep)
+            
+            // Only set the function on the first step (approve)
+            // It will execute both approve and deposit in a batch
+            approveStep.fn = async () => {
+                await depositWithBatchedApprovalMutateAsync({ 
+                    approveStep,
+                    depositStep 
+                })
                 return true
-            },
-        }))
+            }
+        } else {
+                steps.push(new ToastStep({
+                text: userDeposit.value > 0n ? `Depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...` : `Depositing ${lendAmount.value} ${CREDIT_NAME}...`,
+                async fn(step) {
+                    await depositMutateAsync({ step })
+                    return true
+                }
+                }))
+            }
     }
 
     toast.value = new Toast({

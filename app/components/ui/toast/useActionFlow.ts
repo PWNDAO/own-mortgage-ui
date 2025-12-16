@@ -39,7 +39,18 @@ export default function useActionFlow(toast: Ref<Toast>) {
       if (stepIndex >= currentToast.steps.length) break
 
       const step = currentToast.steps[stepIndex]!
-      step.status = ToastStepStatus.PENDING
+      
+      // Get all batched steps using the Toast helper method
+      const batchedSteps = currentToast.getBatchedSteps(stepIndex)
+      
+      console.log(`[ActionFlow] Processing step ${stepIndex}, found ${batchedSteps.length} batched steps`)
+      console.log(`[ActionFlow] Step isBatched=${step.isBatched}, txHash=${step.txHash}`)
+      
+      // Set all batched steps to PENDING simultaneously
+      batchedSteps.forEach(s => {
+        s.status = ToastStepStatus.PENDING
+      })
+      
       let success: boolean = false
       let error: Error | undefined = undefined
       try {
@@ -48,18 +59,27 @@ export default function useActionFlow(toast: Ref<Toast>) {
         success = false
         error = err as Error
       }
+      
       if (!success) {
-        step.status = ToastStepStatus.ERROR
+        // Mark all batched steps as ERROR with the same error
+        currentToast.syncBatchedStepsStatus(stepIndex, ToastStepStatus.ERROR, error)
+        
+        console.log(`[ActionFlow] Marked ${batchedSteps.length} steps as ERROR`)
+        
         if (error) {
-          step.error = error
           throw error
         } else {
           console.error('Error when processing step', step)
           throw new Error(`Error while performing a step number ${stepIndex} on toast ID ${currentToast.id}.`)
         }
       } else {
-        step.status = ToastStepStatus.SUCCESS
-        currentToast.stepToPerform = stepIndex + 1
+        // Mark all batched steps as SUCCESS
+        currentToast.syncBatchedStepsStatus(stepIndex, ToastStepStatus.SUCCESS)
+        
+        console.log(`[ActionFlow] Marked ${batchedSteps.length} steps as SUCCESS`)
+        
+        // Skip all batched steps
+        currentToast.stepToPerform = stepIndex + batchedSteps.length
       }
     }
 
