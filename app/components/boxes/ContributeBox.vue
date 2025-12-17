@@ -243,42 +243,64 @@ const handleDepositClick = async () => {
     } else {
         // Check if approval is needed
         const needsApproval = await checkApprovalNeeded()
-        
-        // Create approve step only if needed
-        let approveStep: ToastStep | undefined
 
         if (needsApproval) {
+            let approveStep
             approveStep = new ToastStep({
                 text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
                 fn: async () => true, // Will be set below
-                isBatched: true, // Mark as batched
             })
-            steps.push(approveStep)
 
-            // Create deposit step
             let depositText
             if (userDeposit.value > 0n) {
                 depositText = `Depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...`
             } else {
                 depositText = `Depositing ${lendAmount.value} ${CREDIT_NAME}...`
             }
-            
+
             const depositStep = new ToastStep({
                 text: depositText,
-                fn: async () => true, // No-op, will be executed by approveStep
-                isBatched: true, // Mark as batched
+                fn: async () => true, // Will be set below
             })
-            
+
+            steps.push(approveStep)
             steps.push(depositStep)
             
-            // Only set the function on the first step (approve)
-            // It will execute both approve and deposit in a batch
-            approveStep.fn = async () => {
-                await depositWithBatchedApprovalMutateAsync({ 
+
+            // Try to batch approve + deposit
+            try {
+                
+                approveStep.isBatched = true
+                depositStep.isBatched = true
+                
+
+                approveStep.fn = async (step) => {
+                    
+                    await depositWithBatchedApprovalMutateAsync({ 
                     approveStep,
                     depositStep 
-                })
-                return true
+                    })
+                    
+                    return true
+                }
+                
+
+            } catch (e) {
+                // Fallback to separate approve + deposit if batching fails
+                console.error('Batch approve + deposit failed, falling back to separate steps:', e)
+                // should probably flush the steps here and simply readd them 
+                approveStep.isBatched = false
+                depositStep.isBatched = false
+
+                approveStep.fn = async (step) => {
+                    await approveForDepositIfNeededMutateAsync({ step })
+                    return true
+                }
+                
+                depositStep.fn = async (step) => {
+                    await depositMutateAsync({ step })
+                    return true
+                }
             }
         } else {
                 steps.push(new ToastStep({

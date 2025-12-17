@@ -84,75 +84,40 @@ export default function useLend() {
         return txReceipt
     }
 
-    const depositWithBatchedApproval = async (approveStep: ToastStep | undefined, depositStep: ToastStep) => {
-        if (!approveStep) {
-            // If no approval step, just do a regular deposit
-            return await sendTransaction({
-                abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
-                functionName: 'deposit',
-                args: [amountInputStore.amountToDepositAdditionally, userAddress.value!],
-                address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
-                chainId: connectedChainId.value,
-            }, { step: depositStep })
-        }
+    const depositWithBatchedApproval = async (approveStep: ToastStep , depositStep: ToastStep) => {
+        const calls = []
 
-        try {
-            const calls = []
+        // Add approve call
+        const approveCallData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: 'approve',
+            args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountInputStore.lendAmountBigInt],
+        })
+        
+        calls.push({
+            to: CREDIT_ADDRESS,
+            data: approveCallData,
+        })
 
-            // Add approve call
-            const approveCallData = encodeFunctionData({
-                abi: erc20Abi,
-                functionName: 'approve',
-                args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountInputStore.lendAmountBigInt],
-            })
-            
-            calls.push({
-                to: CREDIT_ADDRESS,
-                data: approveCallData,
-            })
+        // Add deposit call
+        const depositCallData = encodeFunctionData({
+            abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+            functionName: 'deposit',
+            args: [amountInputStore.amountToDepositAdditionally, userAddress.value!],
+        })
+        
+        calls.push({
+            to: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+            data: depositCallData,
+        })
 
-            // Add deposit call
-            const depositCallData = encodeFunctionData({
-                abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
-                functionName: 'deposit',
-                args: [amountInputStore.amountToDepositAdditionally, userAddress.value!],
-            })
-            
-            calls.push({
-                to: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
-                data: depositCallData,
-            })
-
-            // Send batch transaction using the new helper function
-            const txReceipt = await sendBatchTransaction(calls, {
-                steps: [approveStep, depositStep],
-                chainId: connectedChainId.value!,
-            })
-            
-            return txReceipt
-        } catch (error) {
-            console.error(error)
-            // Fallback: if wallet doesn't support sendCalls, use traditional two-step approach
-            console.warn('Wallet does not support batched transactions (EIP-5792), falling back to sequential transactions', error)
-            
-            // Mark steps as NOT batched (sequential)
-            approveStep.isBatched = false
-            depositStep.isBatched = false
-            
-            // First approve if needed
-            await approveForDepositIfNeeded(approveStep)
-            
-            // Then deposit
-            const txReceipt = await sendTransaction({
-                abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
-                functionName: 'deposit',
-                args: [amountInputStore.amountToDepositAdditionally, userAddress.value!],
-                address: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
-                chainId: connectedChainId.value,
-            }, { step: depositStep })
-            
-            return txReceipt
-        }
+        // Send batch transaction using the new helper function
+        const txReceipt = await sendBatchTransaction(calls, {
+            steps: [approveStep, depositStep],
+            chainId: connectedChainId.value!,
+        })
+        
+        return txReceipt
     }
 
     return { 
