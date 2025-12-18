@@ -38,7 +38,7 @@
                     <span 
                         class="font-bold transition-colors duration-300 text-right flex-shrink-0"
                     >
-                        {{ formatAmount(lender.balance) }} {{ CREDIT_NAME }}
+                        {{ lender.formattedBalance }} {{ CREDIT_NAME }}
                     </span>
                 </div>
                 <template v-if="isLoading">
@@ -52,10 +52,9 @@
 </template>
 
 <script setup lang="ts">
-import { CREDIT_NAME, CREDIT_DECIMALS } from '~/constants/proposalConstants';
+import { CREDIT_NAME } from '~/constants/proposalConstants';
 import { useCrowdsourceLender } from '~/composables/useCrowdsourceLender';
 import { useAccount } from '@wagmi/vue';
-import { formatUnits } from 'viem';
 import { Skeleton } from '~/components/ui/skeleton';
 import useUserDepositStore from '~/composables/useUserDepositStore';
 import { useEnsNames } from '~/composables/useEnsNames';
@@ -92,13 +91,6 @@ const formatAddress = (address: string) => {
     }
     // Truncate regular addresses
     return address.substring(0, 6) + '...' + address.substring(address.length - 4)
-}
-
-// Format amount with commas and no decimal places (rounded to nearest integer)
-const formatAmount = (amount: bigint) => {
-    const amountInUnits = formatUnits(amount, CREDIT_DECIMALS)
-    const rounded = Math.round(Number(amountInUnits))
-    return rounded.toLocaleString('en-US')
 }
 </script>
 

@@ -8,5 +8,7 @@ enum MutationIds {
     AcceptProposal = 'acceptProposal',
     ApproveForRepayIfNeeded = 'approveForRepayIfNeeded',
     Repay = 'repay',
+    UpgradeVault = 'upgradeVault',
+    RedeemFromOldVault = 'redeemFromOldVault',
 }
 export default MutationIds

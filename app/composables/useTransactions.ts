@@ -394,13 +394,9 @@ export async function sendBatchTransaction(
         console.error('[sendBatchTransaction] Error checking batch status:', error)
         // If getCallsStatus fails, fallback to trying to wait for the batchId as a transaction hash
         // This handles wallets that might return a transaction hash directly instead of a batch ID
-        try {
-          console.log(`[sendBatchTransaction] Fallback: trying to wait for batchId as transaction hash`)
-          actualTxHash = batchId as `0x${string}`
-          break
-        } catch (fallbackError) {
-          throw error
-        }
+        console.log(`[sendBatchTransaction] Fallback: trying to wait for batchId as transaction hash`)
+        actualTxHash = batchId as `0x${string}`
+        break
       }
     }
 
