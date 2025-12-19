@@ -35,6 +35,13 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
     })
     const newVaultUserShares = computed<bigint>(() => newVaultUserSharesQuery.data?.value ?? 0n)
 
+    const refetchUserShares = async () => {
+        await Promise.allSettled([
+            oldVaultUserSharesQuery.refetch(),
+            newVaultUserSharesQuery.refetch()
+        ])
+    }
+
     // Sum of shares from both vaults (for backward compatibility)
     const userShares = computed<bigint>(() => oldVaultUserShares.value + newVaultUserShares.value)
 
@@ -123,7 +130,8 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
         oldVaultUserDeposit,
         userDepositFormatted,
         userDepositFormattedDecimals,
-        isFetchingUserDeposit
+        isFetchingUserDeposit,
+        refetchUserShares,
     }
 })
 

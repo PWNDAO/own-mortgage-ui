@@ -198,6 +198,7 @@ const { isPending: isWithdrawing, mutateAsync: withdrawMutateAsync } = useMutati
     },
     onSuccess() {
         refetchTotalDepositedAssets()
+        userDepositStore.refetchUserShares()
     },
     throwOnError: true,
 })
@@ -206,10 +207,12 @@ const { isPending: isWithdrawingAllPending, mutateAsync: withdrawAllMutateAsync 
     mutationKey: [MutationIds.WithdrawAll],
     mutationFn: async ({ step }: { step: ToastStep }) => {
         const vaultAddress = oldVaultUserDeposit.value > 0n ? OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS : PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS
+        // TODO is it fine to always pass here userShares? or in case of old vault we should pass oldVaultUserShares?
         await redeemAll(vaultAddress, userShares.value, step)
     },
     onSuccess() {
         refetchTotalDepositedAssets()
+        userDepositStore.refetchUserShares()
     },
     throwOnError: true,
 })
@@ -221,7 +224,7 @@ const { isPending: isDepositing, mutateAsync: depositMutateAsync } = useMutation
     },
     onSuccess() {
         refetchTotalDepositedAssets()
-
+        userDepositStore.refetchUserShares()
         notificationModal.value?.openModal()
     },
     throwOnError: true,
