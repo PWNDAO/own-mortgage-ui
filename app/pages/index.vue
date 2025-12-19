@@ -28,7 +28,7 @@
               <div class="flex-1 flex items-center justify-center w-full">
                   <div class="flex items-center gap-1 px-3 py-2 bg-gradient-to-br from-green-900/20 to-green-900/5 border border-green-600/30 rounded-lg">
                       <span class="text-2xl text-green-400">Get <a href="#rewards-section" class="underline hover:text-green-300 transition-colors cursor-pointer" @click.prevent="scrollToRewards">rewards</a> +</span>
-                      <span class="text-2xl font-bold text-green-400">2% APR</span>
+                      <span class="text-2xl font-bold text-green-400">{{ MINIMAL_APR }}% APR</span>
                   </div>
               </div>
               
@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { PROPOSAL_EXPIRATION } from '~/constants/proposalConstants'
+import { PROPOSAL_EXPIRATION, MINIMAL_APR } from '~/constants/proposalConstants'
 
 const daysRemaining = computed(() => {
     const deadline = new Date(PROPOSAL_EXPIRATION * 1000).getTime()

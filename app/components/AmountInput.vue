@@ -197,10 +197,6 @@ const amountInvalidMessage = computed(() => {
     
     try {
         const amount = parseUnits(amountStr, CREDIT_DECIMALS)
-        if (amount > missingAmount.value) {
-            const missingAmountFormatted = formatDecimalPoint(formatUnits(missingAmount.value, CREDIT_DECIMALS), 2)
-            return `Amount exceeds maximum remaining amount (${missingAmountFormatted} ${CREDIT_NAME})`
-        }
         if (amount > walletBalancePlusUserDeposit.value) {
             return 'Amount exceeds balance'
         }

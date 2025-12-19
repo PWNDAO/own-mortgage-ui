@@ -1,6 +1,6 @@
 import { formatUnits, parseUnits, type Address } from "viem"
 import { proposal } from "@/lib/decode-proposal"
-import { sepolia } from "@reown/appkit/networks";
+import { mainnet } from "@reown/appkit/networks";
 import Decimal from "decimal.js";
 
 // note: for getting the proposal data, see code in decode-proposal.ts and then update the values here
@@ -12,6 +12,9 @@ export const POSTPONEMENT = Number(proposal.postponement)  // how long till the 
 export const POSTPONEMENT_IN_DAYS = Math.round(POSTPONEMENT / 86400)
 export const POSTPONEMENT_IN_MONTHS = Math.round(POSTPONEMENT_IN_DAYS / 30)
 export const LOAN_APY = Number(proposal.interestAPR) // e.g. 1000 is 10%
+console.log('loanAPY', LOAN_APY)
+console.log('proposal')
+console.log(proposal)
 export const LOAN_DURATION = Number(proposal.duration) // in seconds
 export const LOAN_DURATION_IN_DAYS = LOAN_DURATION / 86400
 export const LOAN_DURATION_IN_MONTHS = Math.round(LOAN_DURATION_IN_DAYS / (365 / 12))
@@ -22,28 +25,27 @@ export const MINIMAL_CREDIT_AMOUNT = proposal.minCreditAmount
 export type ProposalChainId = 1 | 11155111
 
 // values required to update manually
-// TODO change back
-// export const PROPOSAL_CHAIN = mainnet
-export const PROPOSAL_CHAIN = sepolia
-// export const PROPOSAL_CHAIN_ID = mainnet.id as ProposalChainId
-export const PROPOSAL_CHAIN_ID = sepolia.id
-// export const CREDIT_DECIMALS = 6 // for USDC
-export const CREDIT_DECIMALS = 2 // for EURS
-// export const CREDIT_NAME = 'USDC'
-export const CREDIT_NAME = 'EURS'
-// export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
-export const CREDIT_ASSET_ICON = '/icons/eurs.svg'
+export const PROPOSAL_CHAIN = mainnet
+// export const PROPOSAL_CHAIN = sepolia
+export const PROPOSAL_CHAIN_ID = mainnet.id as ProposalChainId
+// export const PROPOSAL_CHAIN_ID = sepolia.id
+export const CREDIT_DECIMALS = 6 // for USDC
+// export const CREDIT_DECIMALS = 2 // for EURS
+export const CREDIT_NAME = 'USDC'
+// export const CREDIT_NAME = 'EURS'
+export const CREDIT_ASSET_ICON = '/icons/usdc.svg'
+// export const CREDIT_ASSET_ICON = '/icons/eurs.svg'
 
-// export const COLLATERAL_NAME = 'weETH'
-export const COLLATERAL_NAME = "WETH"
+export const COLLATERAL_NAME = 'weETH'
+// export const COLLATERAL_NAME = "WETH"
 export const COLLATERAL_DECIMALS = 18
-// export const COLLATERAL_ASSET_ICON = '/icons/weeth.svg'
-export const COLLATERAL_ASSET_ICON = '/icons/chain/ethereum.svg'
+export const COLLATERAL_ASSET_ICON = '/icons/weeth.svg'
+// export const COLLATERAL_ASSET_ICON = '/icons/chain/ethereum.svg'
 
 // note: the max amount will be only enforced on frontend, there is no concept of max credit amount
 //  in the smart contracts
-// export const MAX_AMOUNT_FORMATTED: number = 250000;
-export const MAX_AMOUNT_FORMATTED: number = 200;
+export const MAX_AMOUNT_FORMATTED: number = 250000;
+// export const MAX_AMOUNT_FORMATTED: number = 200;
 export const MAX_AMOUNT: bigint = parseUnits(String(MAX_AMOUNT_FORMATTED), CREDIT_DECIMALS)
 
 export const TOTAL_AMOUNT_TO_REPAY = new Decimal(String(MAX_AMOUNT_FORMATTED))
