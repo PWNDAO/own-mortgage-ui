@@ -38,7 +38,7 @@ size="lg"
 
 <script setup lang="ts">
 import { CREDIT_NAME, CREDIT_DECIMALS, CREDIT_ADDRESS, CREDIT_ASSET_ICON, PROPOSAL_CHAIN_ID, MINIMAL_APR } from '~/constants/proposalConstants';
-import { erc20Abi, parseUnits, type Address } from 'viem';
+import { erc20Abi, parseUnits, encodeFunctionData, type Address, type Call } from 'viem';
 import useAmountInputStore from '~/composables/useAmountInputStore';
 import { useMutation } from '@tanstack/vue-query';
 import { useReadContract, useAccount } from '@wagmi/vue';
@@ -51,6 +51,8 @@ import useProposal from '~/composables/useProposal';
 import useUserDepositStore from '~/composables/useUserDepositStore';
 import AmountInput from '~/components/AmountInput.vue';
 import { OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from '~/constants/addresses';
+import { useSendCalls } from '~/composables/useSendCalls';
+import PWN_CROWDSOURCE_LENDER_VAULT_ABI from '~/assets/abis/v1.5/PWNCrowdsourceLenderVault';
 
 const amountInputStore = useAmountInputStore()
 
@@ -70,6 +72,8 @@ const { address, isConnected } = useAccount()
 const { refetchTotalDepositedAssets } = useProposal()
 
 const { open } = useAppKit();
+
+const { isWalletSupportsSendCalls, sendCallsMutation } = useSendCalls()
 
 const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
 
@@ -129,7 +133,7 @@ const walletBalancePlusUserDeposit = computed(() => {
 })
 
 const canSubmit = computed(() => {
-    if (isApproving.value || isDepositing.value || isBatchDepositing.value || isWithdrawing.value || isWithdrawingAllPending.value || isUpgradingVault.value || isRedeemingFromOldVault.value || lendAmount.value === '') {
+    if (isApproving.value || isDepositing.value || isWithdrawing.value || isWithdrawingAllPending.value || isRedeemingFromOldVault.value || sendCallsMutation.isPending.value || lendAmount.value === '') {
         return false
     }
 
@@ -177,24 +181,12 @@ const canSubmit = computed(() => {
 const toast = ref<Toast>()
 let continueFlow: () => Promise<void> | undefined
 
-const { checkApprovalNeeded, approveForDepositIfNeeded, deposit, depositWithBatchedApproval, withdraw, redeemAll, upgradeVault, redeemFromOldVault } = useLend()
+const { checkApprovalNeeded, approveForDepositIfNeeded, deposit, withdraw, redeemAll, redeemFromOldVault } = useLend()
 
 const { isPending: isApproving, mutateAsync: approveForDepositIfNeededMutateAsync } = useMutation({
     mutationKey: [MutationIds.ApproveForDepositIfNeeded],
     mutationFn: async ({ step }: { step: ToastStep }) => {
         await approveForDepositIfNeeded(step)
-    },
-    throwOnError: true,
-})
-
-const { isPending: isBatchDepositing, mutateAsync: depositWithBatchedApprovalMutateAsync } = useMutation({
-    mutationKey: [MutationIds.DepositWithBatchedApproval],
-    mutationFn: async ({ approveStep, depositStep }: { approveStep: ToastStep | undefined, depositStep: ToastStep }) => {
-        await depositWithBatchedApproval(approveStep!, depositStep)
-    },
-    onSuccess() {
-        refetchTotalDepositedAssets()
-        notificationModal.value?.openModal()
     },
     throwOnError: true,
 })
@@ -235,18 +227,6 @@ const { isPending: isDepositing, mutateAsync: depositMutateAsync } = useMutation
     throwOnError: true,
 })
 
-const { isPending: isUpgradingVault, mutateAsync: upgradeVaultMutateAsync } = useMutation({
-    mutationKey: [MutationIds.UpgradeVault],
-    mutationFn: async ({ redeemStep, approveStep, depositStep }: { redeemStep: ToastStep, approveStep: ToastStep, depositStep: ToastStep }) => {
-        await upgradeVault(oldVaultUserShares.value, redeemStep, approveStep, depositStep)
-    },
-    onSuccess() {
-        refetchTotalDepositedAssets()
-        notificationModal.value?.openModal()
-    },
-    throwOnError: true,
-})
-
 const { isPending: isRedeemingFromOldVault, mutateAsync: redeemFromOldVaultMutateAsync } = useMutation({
     mutationKey: [MutationIds.RedeemFromOldVault],
     mutationFn: async ({ step }: { step: ToastStep }) => {
@@ -269,60 +249,79 @@ const handleDepositClick = async () => {
         // If user has old vault deposit and not withdrawing all, do upgrade flow
         if (oldVaultUserDeposit.value > 0n && !isWithdrawingAll.value && lendAmount.value !== '') {
             // Upgrade flow: redeem from old vault and deposit specified amount to new vault
-            const redeemStep = new ToastStep({
-                text: `Redeeming ${CREDIT_NAME} from old vault...`,
-                fn: async () => true, // Will be set below
-            })
+            
+            if (isWalletSupportsSendCalls.value) {
+                // Batch transaction: create 1 step
+                const calls: Call[] = []
+                
+                // Add redeem call from old vault
+                const redeemCallData = encodeFunctionData({
+                    abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+                    functionName: 'redeem',
+                    args: [oldVaultUserShares.value, address.value!, address.value!],
+                })
+                calls.push({
+                    to: OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+                    data: redeemCallData,
+                })
 
-            const approveStep = new ToastStep({
-                text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
-                fn: async () => true, // Will be set below
-            })
+                // Add approve call for new vault
+                const approveCallData = encodeFunctionData({
+                    abi: erc20Abi,
+                    functionName: 'approve',
+                    args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, lendAmountBigInt.value],
+                })
+                calls.push({
+                    to: CREDIT_ADDRESS,
+                    data: approveCallData,
+                })
 
-            const depositStep = new ToastStep({
-                text: `Depositing ${lendAmount.value} ${CREDIT_NAME} to new vault...`,
-                fn: async () => true, // Will be set below
-            })
+                // Add deposit call to new vault
+                const depositCallData = encodeFunctionData({
+                    abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+                    functionName: 'deposit',
+                    args: [lendAmountBigInt.value, address.value!],
+                })
+                calls.push({
+                    to: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+                    data: depositCallData,
+                })
 
-            steps.push(redeemStep)
-            steps.push(approveStep)
-            steps.push(depositStep)
+                const upgradeStep = new ToastStep({
+                    text: `Upgrading to new vault: redeeming, approving, and depositing ${lendAmount.value} ${CREDIT_NAME}...`,
+                    async fn(step) {
+                        await sendCallsMutation.mutateAsync({ calls, step })
+                        refetchTotalDepositedAssets()
+                        notificationModal.value?.openModal()
+                        return true
+                    }
+                })
+                steps.push(upgradeStep)
+            } else {
+                // Individual transactions: create 3 separate steps
+                steps.push(new ToastStep({
+                    text: `Redeeming ${CREDIT_NAME} from old vault...`,
+                    async fn(step) {
+                        await redeemFromOldVaultMutateAsync({ step })
+                        return true
+                    }
+                }))
 
-            // Try to batch all 3 transactions
-            try {
-                redeemStep.isBatched = true
-                approveStep.isBatched = true
-                depositStep.isBatched = true
+                steps.push(new ToastStep({
+                    text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
+                    async fn(step) {
+                        await approveForDepositIfNeededMutateAsync({ step })
+                        return true
+                    }
+                }))
 
-                redeemStep.fn = async () => {
-                    await upgradeVaultMutateAsync({
-                        redeemStep,
-                        approveStep,
-                        depositStep
-                    })
-                    return true
-                }
-            } catch (e) {
-                // Fallback to separate transactions if batching fails
-                console.error('Batch upgrade failed, falling back to separate steps:', e)
-                redeemStep.isBatched = false
-                approveStep.isBatched = false
-                depositStep.isBatched = false
-
-                redeemStep.fn = async (step) => {
-                    await redeemFromOldVaultMutateAsync({ step })
-                    return true
-                }
-
-                approveStep.fn = async (step) => {
-                    await approveForDepositIfNeededMutateAsync({ step })
-                    return true
-                }
-
-                depositStep.fn = async (step) => {
-                    await depositMutateAsync({ step })
-                    return true
-                }
+                steps.push(new ToastStep({
+                    text: `Depositing ${lendAmount.value} ${CREDIT_NAME} to new vault...`,
+                    async fn(step) {
+                        await depositMutateAsync({ step })
+                        return true
+                    }
+                }))
             }
         } else if (isAmountInputLowerThanUserDeposit.value) {
             if (isWithdrawingAll.value) {
@@ -348,61 +347,73 @@ const handleDepositClick = async () => {
             const needsApproval = await checkApprovalNeeded()
 
             if (needsApproval) {
-                const approveStep = new ToastStep({
-                    text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
-                    fn: async () => true, // Will be set below
-                })
+                if (isWalletSupportsSendCalls.value) {
+                    // Batch transaction: create 1 step
+                    const calls: Call[] = []
+                    
+                    // Add approve call
+                    const approveCallData = encodeFunctionData({
+                        abi: erc20Abi,
+                        functionName: 'approve',
+                        args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, lendAmountBigInt.value],
+                    })
+                    calls.push({
+                        to: CREDIT_ADDRESS,
+                        data: approveCallData,
+                    })
 
-                let depositText
-                if (userDeposit.value > 0n) {
-                    depositText = `Depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...`
+                    // Add deposit call
+                    const depositCallData = encodeFunctionData({
+                        abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
+                        functionName: 'deposit',
+                        args: [amountToDepositAdditionally.value, address.value!],
+                    })
+                    calls.push({
+                        to: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
+                        data: depositCallData,
+                    })
+
+                    let batchText
+                    if (userDeposit.value > 0n) {
+                        batchText = `Approving and depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...`
+                    } else {
+                        batchText = `Approving and depositing ${lendAmount.value} ${CREDIT_NAME}...`
+                    }
+
+                    const batchStep = new ToastStep({
+                        text: batchText,
+                        async fn(step) {
+                            await sendCallsMutation.mutateAsync({ calls, step })
+                            refetchTotalDepositedAssets()
+                            notificationModal.value?.openModal()
+                            return true
+                        }
+                    })
+                    steps.push(batchStep)
                 } else {
-                    depositText = `Depositing ${lendAmount.value} ${CREDIT_NAME}...`
-                }
+                    // Individual transactions: create 2 separate steps
+                    steps.push(new ToastStep({
+                        text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
+                        async fn(step) {
+                            await approveForDepositIfNeededMutateAsync({ step })
+                            return true
+                        }
+                    }))
 
-                const depositStep = new ToastStep({
-                    text: depositText,
-                    fn: async () => true, // Will be set below
-                })
-
-                steps.push(approveStep)
-                steps.push(depositStep)
-
-
-                // Try to batch approve + deposit
-                try {
-
-                    approveStep.isBatched = true
-                    depositStep.isBatched = true
-
-
-                    approveStep.fn = async () => {
-
-                        await depositWithBatchedApprovalMutateAsync({
-                            approveStep,
-                            depositStep
-                        })
-
-                        return true
+                    let depositText
+                    if (userDeposit.value > 0n) {
+                        depositText = `Depositing ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME} more (on top of your ${userDepositFormatted.value} ${CREDIT_NAME})...`
+                    } else {
+                        depositText = `Depositing ${lendAmount.value} ${CREDIT_NAME}...`
                     }
 
-
-                } catch (e) {
-                    // Fallback to separate approve + deposit if batching fails
-                    console.error('Batch approve + deposit failed, falling back to separate steps:', e)
-                    // should probably flush the steps here and simply readd them 
-                    approveStep.isBatched = false
-                    depositStep.isBatched = false
-
-                    approveStep.fn = async (step) => {
-                        await approveForDepositIfNeededMutateAsync({ step })
-                        return true
-                    }
-
-                    depositStep.fn = async (step) => {
-                        await depositMutateAsync({ step })
-                        return true
-                    }
+                    steps.push(new ToastStep({
+                        text: depositText,
+                        async fn(step) {
+                            await depositMutateAsync({ step })
+                            return true
+                        }
+                    }))
                 }
             } else {
                 steps.push(new ToastStep({
