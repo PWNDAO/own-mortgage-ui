@@ -12,9 +12,6 @@ export const POSTPONEMENT = Number(proposal.postponement)  // how long till the 
 export const POSTPONEMENT_IN_DAYS = Math.round(POSTPONEMENT / 86400)
 export const POSTPONEMENT_IN_MONTHS = Math.round(POSTPONEMENT_IN_DAYS / 30)
 export const LOAN_APY = Number(proposal.interestAPR) // e.g. 1000 is 10%
-console.log('loanAPY', LOAN_APY)
-console.log('proposal')
-console.log(proposal)
 export const LOAN_DURATION = Number(proposal.duration) // in seconds
 export const LOAN_DURATION_IN_DAYS = LOAN_DURATION / 86400
 export const LOAN_DURATION_IN_MONTHS = Math.round(LOAN_DURATION_IN_DAYS / (365 / 12))
