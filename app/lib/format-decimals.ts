@@ -1,3 +1,6 @@
+import { formatUnits } from "viem"
+import { CREDIT_DECIMALS } from "~/constants/proposalConstants"
+
 /**
  * Parse the decimal repeated value
  * @param value — The value to parse 0.000000000005
@@ -82,3 +85,10 @@ export const formatDecimalPoint = (amount: number | string, numbersBehindDecimal
   
     return result
   }
+
+// Format amount with commas and no decimal places (rounded to nearest integer)
+export const formatAmount = (amount: bigint) => {
+  const amountInUnits = formatUnits(amount, CREDIT_DECIMALS)
+  const rounded = Math.round(Number(amountInUnits))
+  return rounded.toLocaleString('en-US')
+}

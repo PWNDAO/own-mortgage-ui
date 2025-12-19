@@ -81,10 +81,8 @@ export default function useBorrow() {
             signature: '0x',
         }
         const lenderSpec: ContractFunctionArgs<typeof PWN_LOAN_ABI, 'nonpayable', 'create'>[1] = {
-            // TODO is this correct?
             createHook: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
             createHookData: '0x',
-            // TODO is this correct?
             repaymentHook: PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS,
             repaymentHookData: '0x',
         }

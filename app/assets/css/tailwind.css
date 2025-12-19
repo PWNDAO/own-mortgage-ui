@@ -83,11 +83,11 @@
 }
 
 :root {
-  --background: oklch(0.1776 0 0); /* rgb(17, 17, 17) , #111111 */
+  --background: oklch(0.14 0 0); /* Darker base background #0d0d0d */
   --foreground: oklch(0.9637 0.0187 292.61); /* rgb(243, 241, 255) , #F3F1FF */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: var(--background);
+  --card: oklch(0.19 0 0); /* Lighter than background for cards #1a1a1a */
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.19 0 0);
   --popover-foreground: var(--foreground);
   --primary: oklch(0.2458 0.0516 249.02); /* #0a2238 */
   --primary-foreground: oklch(0.6766 0.179682 248.1692); /* #0e9cff  */ 
@@ -100,7 +100,7 @@
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.3829 0 0);
+  --border: oklch(0.25 0 0); /* Subtle borders */
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -108,7 +108,7 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
+  --radius: 1rem; /* Increased for more rounded tiles */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);

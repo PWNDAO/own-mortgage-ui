@@ -42,7 +42,7 @@ export const COLLATERAL_ASSET_ICON = '/icons/weeth.svg'
 // note: the max amount will be only enforced on frontend, there is no concept of max credit amount
 //  in the smart contracts
 export const MAX_AMOUNT_FORMATTED: number = 250000;
-// export const MAX_AMOUNT_FORMATTED: number = 500;
+// export const MAX_AMOUNT_FORMATTED: number = 200;
 export const MAX_AMOUNT: bigint = parseUnits(String(MAX_AMOUNT_FORMATTED), CREDIT_DECIMALS)
 
 export const TOTAL_AMOUNT_TO_REPAY = new Decimal(String(MAX_AMOUNT_FORMATTED))
@@ -55,4 +55,4 @@ export const TOTAL_AMOUNT_TO_REPAY = new Decimal(String(MAX_AMOUNT_FORMATTED))
 // note: holds value between 0 and 1 (e.g. 60% is represented as 0.6)
 export const MINIMAL_CREDIT_AMOUNT_PERCENTAGE: string = new Decimal(formatUnits(MINIMAL_CREDIT_AMOUNT, CREDIT_DECIMALS)).div(formatUnits(MAX_AMOUNT, CREDIT_DECIMALS)).toDecimalPlaces(2, Decimal.ROUND_FLOOR).toString()
 
-export const MINIMAL_APR = 2 // used only for displaying purposes
+export const MINIMAL_APR = 2.5 // used only for displaying purposes

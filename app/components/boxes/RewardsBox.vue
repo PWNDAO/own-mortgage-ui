@@ -1,10 +1,15 @@
 <template>
-    <div class="border p-3 sm:p-4 order-4 lg:order-none">
-        <h3 class="font-heading text-lg sm:text-xl mb-3">Rewards</h3>
-        <div class="mb-4 text-sm sm:text-base">
+    <div 
+        id="rewards-section" 
+        ref="rewardsBoxRef"
+        class="bg-card border rounded-xl p-4 sm:p-6 order-4 lg:order-none shadow-lg transition-all duration-1000"
+        :class="{ 'bg-gray-800/80 shadow-xl shadow-green-900/20': isHighlighted }"
+    >
+        <h3 class="font-heading text-xl sm:text-2xl mb-2">Exclusive Rewards</h3>
+        <div class="mb-4 text-sm sm:text-base text-justify">
             Lend and get rewards! Get various rewards based on the amount of liquidity you are able to lend. <b>Remember you are only lending, not donating this amount</b> and the loan is slowly repayed every few months. You can claim any time!
         </div>
-        <div class="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded">
+        <div class="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded-lg">
             <p class="text-sm text-blue-200">
                 💡 To see what rewards you are eligible for, input the total amount in the amount input field in the Contribute box above.
             </p>
@@ -16,7 +21,7 @@
             <div 
                 v-for="reward in REWARDS" 
                 :key="reward.amount" 
-                class="border p-3 transition-all duration-200"
+                class="border rounded-lg p-3 transition-all duration-200 bg-background/30"
                 :class="{
                     'bg-green-900/20 border-green-600/50': isAmountInputFilledAndEligibleForReward(reward.threshold),
                     'opacity-60': isAmountInputFilledAndNotEligibleForReward(reward.threshold)
@@ -47,9 +52,9 @@
                         </svg>
                         <span>Eligible</span>
                     </div>
-                    <div v-else-if="isAmountInputFilled" class="text-sm">
+                    <!-- <div v-else-if="isAmountInputFilled" class="text-sm">
                         {{ getMissingAmount(reward.threshold) }} {{ CREDIT_NAME }} more needed
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -78,6 +83,33 @@ const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
 
 const notificationModalRef = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
+const rewardsBoxRef = ref<HTMLElement | null>(null)
+const isHighlighted = ref(false)
+
+// Watch for hash changes to trigger highlight effect
+onMounted(() => {
+    const handleHashChange = () => {
+        if (window.location.hash === '#rewards-section') {
+            isHighlighted.value = true
+            setTimeout(() => {
+                isHighlighted.value = false
+            }, 3000)
+        }
+    }
+    
+    // Check on mount if already navigated to hash
+    if (window.location.hash === '#rewards-section') {
+        handleHashChange()
+    }
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange)
+    
+    // Cleanup
+    onUnmounted(() => {
+        window.removeEventListener('hashchange', handleHashChange)
+    })
+})
 
 const isAmountInputFilled = computed(() => {
     return lendAmount.value && lendAmount.value.trim() !== ''
@@ -129,7 +161,7 @@ const isEligibleForReward = (reward: number) => {
     return amount >= reward
 }
 
-const getMissingAmount = (reward: number) => {
+const _getMissingAmount = (reward: number) => {
     const amount = Number(lendAmount.value) || 0
     const missing = reward - amount
     return missing > 0 ? missing : 0
