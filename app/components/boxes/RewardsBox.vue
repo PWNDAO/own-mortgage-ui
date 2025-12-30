@@ -38,7 +38,7 @@
                             {{ reward.amount }}
                         </div>
                         <div
-                        class="text-sm" 
+                        class="text-sm whitespace-pre-wrap" 
                         :class="{ 
                             'text-green-300': isAmountInputFilledAndEligibleForReward(reward.threshold), 
                             'text-gray-400': isAmountInputFilledAndNotEligibleForReward(reward.threshold),
@@ -126,32 +126,32 @@ const isAmountInputFilledAndNotEligibleForReward = (rewardThreshold: number) => 
 const REWARDS = [
     {
         amount: `$1000+ ${CREDIT_NAME}`,
-        reward: '2 month membership in BORDEL hackerspace, zk badge with opening party invite POAP NFT',
+        reward: '2 month membership in BORDEL hackerspace \n\t + zk badge with opening party invite POAP NFT',
         threshold: 1000,
     },
     {
         amount: `$3000+ ${CREDIT_NAME}`,
-        reward: '6 month membership + above, BORDEL supporter T-shirt',
+        reward: '6 month membership \n\t + BORDEL supporter T-shirt \n\t + all extras above',
         threshold: 3000,
     },
     {
         amount: `$5000+ ${CREDIT_NAME}`,
-        reward: '1 year membership + all above, free space to organize your private event',
+        reward: '1 year membership \n\t + your free private event \n\t + all extras above',
         threshold: 5000,
     },
     {
         amount: `$10 000+ ${CREDIT_NAME}`,
-        reward: '2 year VIP membership + all above, own private space, server hosting + 1x ETHPrague26 ticket',
+        reward: '2 year VIP membership \n\t + own private zone, server hosting \n\t + 1x ETHPrague26 ticket \n\t + all extras above',
         threshold: 10000,
     },
     {
         amount: `$25 000+ ${CREDIT_NAME}`,
-        reward: '5 year VIP membership + all above, access to every events, supporter art plaque and branding',
+        reward: '5 year VIP membership \n\t + access all events, supporter art plaque \n\t + 1x ETHPrague26 VIP ticket \n\t + all extras above',
         threshold: 25000,
     },
     {
         amount: `$50 000+ ${CREDIT_NAME}`,
-        reward: 'VIP supporter, custom reward and collaboration, contact us to discuss details + 1x ETHPrague VIP ticket for each year until the loan is repaid',
+        reward: 'VIP supporter, custom reward and collaboration \n\t +1x ETHPrague VIP ticket until 2030',
         threshold: 50000,
     },
 ]
