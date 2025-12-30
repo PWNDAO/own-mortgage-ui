@@ -141,7 +141,7 @@ const REWARDS = [
     },
     {
         amount: `$10 000+ ${CREDIT_NAME}`,
-        reward: '2 year VIP membership + all above, own private space, server hosting',
+        reward: '2 year VIP membership + all above, own private space, server hosting + 1x ETHPrague26 ticket',
         threshold: 10000,
     },
     {
@@ -151,7 +151,7 @@ const REWARDS = [
     },
     {
         amount: `$50 000+ ${CREDIT_NAME}`,
-        reward: 'VIP supporter, custom reward and collaboration, contact us to discuss details',
+        reward: 'VIP supporter, custom reward and collaboration, contact us to discuss details + 1x ETHPrague VIP ticket for each year until the loan is repaid',
         threshold: 50000,
     },
 ]

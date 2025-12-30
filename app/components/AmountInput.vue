@@ -28,12 +28,12 @@
                 :class="['w-full', inputHeight, 'border-none focus:border-none focus:outline-none focus:ring-0 input-txtsize [&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&[type=number]]:[appearance:textfield]', creditIcon ? 'pr-12 sm:pr-14' : '', { 'border-red-500': isAmountInvalid }]"
             />
             <img v-if="creditIcon" :src="creditIcon" :alt="creditName" width="32" height="32" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 sm:w-8 sm:h-8 pointer-events-none">
-            <div v-if="hasNoCreditAssets" class="text-xs text-amber-500 mt-1">
-                You don't have any {{ CREDIT_NAME }} assets. Please acquire some to lend.
-            </div>
-            <div v-else-if="isAmountInvalid" class="text-xs text-red-500 mt-1">
-                {{ amountInvalidMessage }}
-            </div>
+        </div>
+        <div v-if="hasNoCreditAssets" class="text-xs text-amber-500 mt-1">
+            You don't have any {{ CREDIT_NAME }} assets. Please acquire some to lend.
+        </div>
+        <div v-else-if="isAmountInvalid" class="text-xs text-red-500 mt-1">
+            {{ amountInvalidMessage }}
         </div>
     </div>
 </template>

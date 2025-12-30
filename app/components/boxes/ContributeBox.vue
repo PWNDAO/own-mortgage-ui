@@ -4,8 +4,7 @@ class="bg-gray-900/30 border rounded-xl p-4 sm:p-6 order-3 lg:order-none shadow-
         @click="focusInput">
         <div class="mb-3">
             <h3 class="font-heading text-xl sm:text-2xl mb-1">Fund This Loan</h3>
-            <p class="text-green-400 text-sm sm:text-base font-semibold">Earn minimum of {{ MINIMAL_APR }}% APR +
-                Exclusive Rewards</p>
+            <p class="text-green-400 text-sm sm:text-base font-semibold">Get exclusive perks + fixed {{ MINIMAL_APR }}% APR for 5 years</p>
         </div>
         <hr class="mb-4" />
         <div class="mb-3">
@@ -115,7 +114,7 @@ const lendButtonText = computed(() => {
     } else if (userDeposit.value === 0n && amountToDepositAdditionally.value > 0n) {
         return 'Deposit & Earn'
     } else {
-        return 'Adjust commitment'
+        return 'Change amount'
     }
 })
 

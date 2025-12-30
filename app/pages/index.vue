@@ -19,18 +19,19 @@
 
       <div class="bg-card border rounded-xl p-4 sm:p-6 mb-4 shadow-lg order-0">
           <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-              <div class="flex-1">
+              <div class="flex-2">
                   <h3 class="text-xl sm:text-2xl font-heading mb-1">Funding Progress</h3>
-                  <p class="text-gray-2 text-sm sm:text-base">Fund this this community and become part of onchain history.</p>
+                  <p class="text-gray-2 text-sm sm:text-base">Fund this this community mortgage, get 
+                    <a href="#rewards-section" class="text-green-400 underline hover:text-green-300 transition-colors cursor-pointer" @click.prevent="scrollToRewards">exclusive perks</a>, a <span class="text-green-400">fixed APR of {{ MINIMAL_APR }}%</span> for 5 years and become part of onchain history.</p>
               </div>
               
               <!-- Annual Return -->
-              <div class="flex-1 flex items-center justify-center w-full">
+              <!-- <div class="flex-1 flex items-center justify-center w-full">
                   <div class="flex items-center gap-1 px-3 py-2 bg-gradient-to-br from-green-900/20 to-green-900/5 border border-green-600/30 rounded-lg">
                       <span class="text-2xl text-green-400">Get <a href="#rewards-section" class="underline hover:text-green-300 transition-colors cursor-pointer" @click.prevent="scrollToRewards">rewards</a> +</span>
                       <span class="text-2xl font-bold text-green-400">{{ MINIMAL_APR }}% APR</span>
                   </div>
-              </div>
+              </div> -->
               
               <div class="hidden sm:flex flex-1 items-center justify-end">
                   <div class="flex items-center gap-2 py-2" :class="daysRemaining < 7 ? 'px-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg' : 'px-0'">
