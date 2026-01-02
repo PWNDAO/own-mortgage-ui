@@ -71,13 +71,12 @@ const linkToThisPage = computed(() => `${browserLocation.value.href ?? ''}`)
 
 const encodedLinkToThisPage = computed(() => encodeURIComponent(linkToThisPage.value || ''))
 
-const SHARE_MESSAGE = 'Check out this Bordel DeFi mortgage proposal on OWN!'
+const SHARE_MESSAGE = 'Check out this Bordel DeFi mortgage on OWN!'
 const encodedShareMessage = computed(() => encodeURIComponent(SHARE_MESSAGE || ''))
 
-const twitterLink = computed(() => `https://x.com/intent/tweet?text=${encodedShareMessage.value}&url=${encodedLinkToThisPage.value}&hashtags=p2p,defi`)
+const twitterLink = computed(() => `https://x.com/intent/tweet?text=${encodedShareMessage.value}&url=https://x.com/pwndao/status/1992368972138975342&hashtags=defi`)
 const telegramLink = computed(() => `https://t.me/share/url?text=${encodedShareMessage.value}&url=${encodedLinkToThisPage.value}`)
-const warpcastLink = computed(() => `https://warpcast.com/~/compose?text=${encodedShareMessage.value}%20${encodedLinkToThisPage.value}`)
-
+const warpcastLink = computed(() => `https://warpcast.com/~/compose?text=${encodedShareMessage.value}%20https://farcaster.xyz/pwndao/0xa0bafe4b`)
 const socialButtons = [
   { name: 'Twitter', icon: '/icons/twitter.svg', link: twitterLink },
   { name: 'Telegram', icon: '/icons/telegram.svg', link: telegramLink },

@@ -9,8 +9,11 @@ Decimal.config({ toExpNeg: -9000000000000000 })
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  ssr: false,
+  ssr: true,
   css: ["~/assets/css/tailwind.css"],
+  nitro: {
+    preset: 'cloudflare-pages',
+  },
   imports: {
     autoImport: true,
   },
@@ -65,6 +68,7 @@ export default defineNuxtConfig({
       // TODO is this okay or will our API key gets exposed and someone can use it?
       //  is there a way how to restrict the key usage to only few domains?
       moralisApiKey: process.env.NUXT_PUBLIC_MORALIS_API_KEY,
+      clarityId: process.env.NUXT_PUBLIC_CLARITY_ID,
     }
   },
 });
