@@ -1,4 +1,4 @@
-import { erc20Abi, encodeFunctionData, type Address } from "viem"
+import { erc20Abi, type Address } from "viem"
 import PWN_CROWDSOURCE_LENDER_VAULT_ABI from "~/assets/abis/v1.5/PWNCrowdsourceLenderVault"
 import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from "~/constants/addresses"
 import { CREDIT_ADDRESS } from "~/constants/proposalConstants"

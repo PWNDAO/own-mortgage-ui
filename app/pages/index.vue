@@ -66,6 +66,38 @@
 <script setup lang="ts">
 import { PROPOSAL_EXPIRATION, MINIMAL_APR } from '~/constants/proposalConstants'
 
+// Domain-based metadata
+const url = useRequestURL()
+const domain = url.hostname.toLowerCase()
+
+const metadata = computed(() => {
+  if (domain.includes('loan.bordel.wtf')) {
+    return {
+      title: 'Fund a Hackerspace - First Ever Pure DeFi Mortgage',
+      description: 'PARENTAL ADVISORY - ACTUAL DEFI. Fund the Bordel hackerspace mortgage, earn fixed APR and exclusive perks.',
+      ogImage: '/images/parental-advisory-og.png'
+    }
+  }
+  // Default metadata
+  return {
+    title: 'Fund a Hackerspace - First Ever Pure DeFi Mortgage',
+    description: 'Fund this community mortgage, get exclusive perks, a fixed APR for 5 years and become part of onchain history.',
+    ogImage: '/images/bordel-hackerspace.jpeg'
+  }
+})
+
+useSeoMeta({
+  title: metadata.value.title,
+  description: metadata.value.description,
+  ogTitle: metadata.value.title,
+  ogDescription: metadata.value.description,
+  ogImage: metadata.value.ogImage,
+  twitterCard: 'summary_large_image',
+  twitterTitle: metadata.value.title,
+  twitterDescription: metadata.value.description,
+  twitterImage: metadata.value.ogImage,
+})
+
 const daysRemaining = computed(() => {
     const deadline = new Date(PROPOSAL_EXPIRATION * 1000).getTime()
     const now = new Date().getTime()
