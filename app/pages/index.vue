@@ -71,18 +71,19 @@ const url = useRequestURL()
 const domain = url.hostname.toLowerCase()
 
 const metadata = computed(() => {
+  const baseUrl = url.origin
   if (domain.includes('loan.bordel.wtf')) {
     return {
       title: 'Fund a Hackerspace - First Ever Pure DeFi Mortgage',
       description: 'PARENTAL ADVISORY - ACTUAL DEFI. Fund the Bordel hackerspace mortgage, earn fixed APR and exclusive perks.',
-      ogImage: '/images/parental-advisory-og.png'
+      ogImage: `${baseUrl}/images/parental-advisory-og.png`
     }
   }
   // Default metadata
   return {
     title: 'Fund a Hackerspace - First Ever Pure DeFi Mortgage',
     description: 'Fund this community mortgage, get exclusive perks, a fixed APR for 5 years and become part of onchain history.',
-    ogImage: '/images/bordel-hackerspace.jpeg'
+    ogImage: `${baseUrl}/images/thumbnail.png`
   }
 })
 
@@ -92,6 +93,7 @@ useSeoMeta({
   ogTitle: metadata.value.title,
   ogDescription: metadata.value.description,
   ogImage: metadata.value.ogImage,
+  ogUrl: url.href,
   twitterCard: 'summary_large_image',
   twitterTitle: metadata.value.title,
   twitterDescription: metadata.value.description,

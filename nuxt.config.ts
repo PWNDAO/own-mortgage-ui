@@ -13,6 +13,9 @@ export default defineNuxtConfig({
   css: ["~/assets/css/tailwind.css"],
   nitro: {
     preset: 'cloudflare-pages',
+    alias: {
+      '@react-native-async-storage/async-storage': 'unenv/runtime/mock/empty.mjs'
+    }
   },
   imports: {
     autoImport: true,

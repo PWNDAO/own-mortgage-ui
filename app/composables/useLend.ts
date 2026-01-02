@@ -14,6 +14,12 @@ export default function useLend() {
 
     const checkApprovalNeeded = async () => {
         try {
+            const additionalApprovalNeeded = amountInputStore.amountToDepositAdditionally
+            
+            if (additionalApprovalNeeded <= 0n) {
+                return false // No additional deposit, no approval needed
+            }
+
             const currentAllowance = await readContract(wagmiConfig, {
                 abi: erc20Abi,
                 functionName: 'allowance',
@@ -22,7 +28,7 @@ export default function useLend() {
                 chainId: connectedChainId.value,
             })
 
-            return currentAllowance < amountInputStore.lendAmountBigInt
+            return currentAllowance < additionalApprovalNeeded
         } catch (error) {
             console.error('Error checking allowance:', error)
             return true // Assume approval needed if we can't check
@@ -30,6 +36,12 @@ export default function useLend() {
     }
 
     const approveForDepositIfNeeded = async (step: ToastStep) => {
+        const additionalApprovalNeeded = amountInputStore.amountToDepositAdditionally
+        
+        if (additionalApprovalNeeded <= 0n) {
+            return true // No additional deposit, no approval needed
+        }
+
         const currentAllowance = await readContract(wagmiConfig, {
             abi: erc20Abi,
             functionName: 'allowance',
@@ -38,11 +50,11 @@ export default function useLend() {
             chainId: connectedChainId.value,
         })
 
-        if (currentAllowance < amountInputStore.lendAmountBigInt) {
+        if (currentAllowance < additionalApprovalNeeded) {
             await sendTransaction({
                 abi: erc20Abi,
                 functionName: 'approve',
-                args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountInputStore.lendAmountBigInt],
+                args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, additionalApprovalNeeded],
                 address: CREDIT_ADDRESS,
                 chainId: connectedChainId.value,
             }, { step })

@@ -70,19 +70,19 @@
             to our updates or contact info@bordel.wtf
         </div>
     </div>
-    <NotificationSignupModal ref="notificationModalRef" :display-open-button="false" />
+    <DepositSuccessModal ref="notificationModalRef" />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { CREDIT_NAME } from '~/constants/proposalConstants';
 import useAmountInputStore from '~/composables/useAmountInputStore';
-import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue';
+import DepositSuccessModal from '~/components/modals/DepositSuccessModal.vue';
 
 const amountInputStore = useAmountInputStore()
 const { lendAmount } = storeToRefs(amountInputStore)
 
-const notificationModalRef = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
+const notificationModalRef = ref<InstanceType<typeof DepositSuccessModal> | null>(null)
 const rewardsBoxRef = ref<HTMLElement | null>(null)
 const isHighlighted = ref(false)
 

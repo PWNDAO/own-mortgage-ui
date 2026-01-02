@@ -5,7 +5,7 @@
     </div>
     <div class="flex justify-end gap-1 sm:gap-2 items-center">
       <ShareModal />
-      <NotificationSignupModal />
+      <GetUpdatesModal />
       <ConnectWalletBtn />
     </div>
   </nav>

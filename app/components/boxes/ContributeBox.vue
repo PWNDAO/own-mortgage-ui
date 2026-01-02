@@ -18,7 +18,7 @@ ref="amountInputRef" placeholder="0.0" :prefilled-amount="userDepositFormatted"
 
             <Button
 size="lg"
-                class="h-[5rem] sm:h-[5rem] w-full flex items-center mt-3 pl-6 pr-2 sm:pl-8 sm:pr-4 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-bttn overflow-hidden"
+                class="h-[3rem] w-full flex items-center mt-3 pl-6 pr-2 sm:pl-8 sm:pr-4 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-bttn overflow-hidden"
                 :disabled="!canSubmit" @click="handleDepositClick">
                 <div class="w-full min-w-0 overflow-hidden">
                     <div
@@ -31,7 +31,7 @@ size="lg"
             </Button>
 
         </div>
-        <NotificationSignupModal ref="notificationModal" :display-open-button="false" />
+        <DepositSuccessModal ref="notificationModal" />
     </div>
 </template>
 
@@ -43,7 +43,7 @@ import { useMutation } from '@tanstack/vue-query';
 import { useReadContract, useAccount } from '@wagmi/vue';
 import { ToastStep, Toast, TOAST_ACTION_ID_TO_UNIQUE_ID_FN, ToastActionEnum } from '~/components/ui/toast/useToastsStore';
 import useActionFlow from '~/components/ui/toast/useActionFlow';
-import NotificationSignupModal from '~/components/modals/NotificationSignupModal.vue';
+import DepositSuccessModal from '~/components/modals/DepositSuccessModal.vue';
 import MutationIds from '~/constants/mutationIds';
 import { useAppKit } from "@reown/appkit/vue";
 import useProposal from '~/composables/useProposal';
@@ -74,7 +74,7 @@ const { open } = useAppKit();
 
 const { isWalletSupportsSendCalls, sendCallsMutation } = useSendCalls()
 
-const notificationModal = ref<InstanceType<typeof NotificationSignupModal> | null>(null)
+const notificationModal = ref<InstanceType<typeof DepositSuccessModal> | null>(null)
 
 const amountInputRef = ref<InstanceType<typeof AmountInput> | null>(null)
 
@@ -271,7 +271,7 @@ const handleDepositClick = async () => {
                 const approveCallData = encodeFunctionData({
                     abi: erc20Abi,
                     functionName: 'approve',
-                    args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, lendAmountBigInt.value],
+                    args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountToDepositAdditionally.value],
                 })
                 calls.push({
                     to: CREDIT_ADDRESS,
@@ -310,7 +310,7 @@ const handleDepositClick = async () => {
                 }))
 
                 steps.push(new ToastStep({
-                    text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
+                    text: `Approving ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME}...`,
                     async fn(step) {
                         await approveForDepositIfNeededMutateAsync({ step })
                         return true
@@ -357,7 +357,7 @@ const handleDepositClick = async () => {
                     const approveCallData = encodeFunctionData({
                         abi: erc20Abi,
                         functionName: 'approve',
-                        args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, lendAmountBigInt.value],
+                        args: [PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, amountToDepositAdditionally.value],
                     })
                     calls.push({
                         to: CREDIT_ADDRESS,
@@ -395,7 +395,7 @@ const handleDepositClick = async () => {
                 } else {
                     // Individual transactions: create 2 separate steps
                     steps.push(new ToastStep({
-                        text: `Approving ${lendAmount.value} ${CREDIT_NAME}...`,
+                        text: `Approving ${amountToDepositAdditionallyFormatted.value} ${CREDIT_NAME}...`,
                         async fn(step) {
                             await approveForDepositIfNeededMutateAsync({ step })
                             return true

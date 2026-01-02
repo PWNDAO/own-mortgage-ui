@@ -7,20 +7,24 @@
     </DialogTrigger>
     <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>Early Access Registration</DialogTitle>
+        <DialogTitle class="mb-6">Early Access Registration</DialogTitle>
         <DialogDescription>
-            Interested in getting mortgage financing for your project through DeFi? 
-            Fill out the form below and we'll reach out to discuss how to do this!
+          <div class="flex flex-col max-w-full">
+            <p class="text-base text-white mb-4">
+              Interested in getting a DeFi mortgage for your project? <br />
+              Fill out the form and we'll reach out to discuss how to do this!
+            </p>
+          </div>
         </DialogDescription>
       </DialogHeader>
 
       <form class="space-y-4" @submit.prevent="handleSubmit">
         <div class="space-y-2">
-          <label for="commsChannel" class="text-sm font-medium">Preferred communication channel</label>
+          <label for="commsChannel" class="text-base font-medium mb-3 block text-white">Preferred communication channel:</label>
           <input 
-            type="text" 
             id="commsChannel" 
             v-model="formData.commsChannel"
+            type="text" 
             required 
             placeholder="Email, Telegram, Signal, etc."
             class="w-full px-3 py-2 border rounded-md bg-background"
@@ -28,8 +32,8 @@
         </div>
 
         <div class="space-y-2">
-          <label for="projectDescription" class="text-sm font-medium">
-            Describe the project you'd like to get mortgage financing for
+          <label for="projectDescription" class="text-base font-medium mb-3 block text-white">
+            Describe the project you'd like to get mortgage financing for:
           </label>
           <textarea 
             id="projectDescription" 
@@ -81,7 +85,7 @@ const handleSubmit = async () => {
   submitMessage.value = ''
   
   try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
+    await fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: {
