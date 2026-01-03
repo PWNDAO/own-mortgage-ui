@@ -4,7 +4,7 @@ import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, OLD_PWN_CROWDSOURCE_LENDER_VAULT_
 import { CREDIT_ADDRESS } from "~/constants/proposalConstants"
 import { useAccount } from "@wagmi/vue"
 import { readContract } from "@wagmi/core/actions"
-import { wagmiConfig } from "~/config/appkit"
+import { getWagmiConfig } from "~/config/appkit"
 import { sendTransaction } from "./useTransactions"
 import type { ToastStep } from "~/components/ui/toast/useToastsStore"
 
@@ -15,12 +15,12 @@ export default function useLend() {
     const checkApprovalNeeded = async () => {
         try {
             const additionalApprovalNeeded = amountInputStore.amountToDepositAdditionally
-            
+
             if (additionalApprovalNeeded <= 0n) {
                 return false // No additional deposit, no approval needed
             }
 
-            const currentAllowance = await readContract(wagmiConfig, {
+            const currentAllowance = await readContract(getWagmiConfig(), {
                 abi: erc20Abi,
                 functionName: 'allowance',
                 args: [userAddress.value!, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS],
@@ -37,12 +37,12 @@ export default function useLend() {
 
     const approveForDepositIfNeeded = async (step: ToastStep) => {
         const additionalApprovalNeeded = amountInputStore.amountToDepositAdditionally
-        
+
         if (additionalApprovalNeeded <= 0n) {
             return true // No additional deposit, no approval needed
         }
 
-        const currentAllowance = await readContract(wagmiConfig, {
+        const currentAllowance = await readContract(getWagmiConfig(), {
             abi: erc20Abi,
             functionName: 'allowance',
             args: [userAddress.value!, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS],
@@ -78,7 +78,7 @@ export default function useLend() {
         const withdrawAllTxReceipt = await sendTransaction({
             abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
             functionName: 'redeem',
-            args: [withdrawSharesAmount, userAddress.value!, userAddress.value!], 
+            args: [withdrawSharesAmount, userAddress.value!, userAddress.value!],
             address: vaultAddress,
             chainId: connectedChainId.value,
         }, { step })
@@ -108,9 +108,9 @@ export default function useLend() {
         return redeemTxReceipt
     }
 
-    return { 
+    return {
         checkApprovalNeeded,
-        approveForDepositIfNeeded, 
+        approveForDepositIfNeeded,
         deposit,
         withdraw,
         redeemAll,

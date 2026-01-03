@@ -2,7 +2,7 @@ import { useLocalStorage } from "@vueuse/core"
 import { getAddress, type Address } from "viem"
 import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS } from '~/constants/addresses'
 import { readContracts } from "@wagmi/core/actions"
-import { wagmiConfig } from '~/config/appkit'
+import { getWagmiConfig } from '~/config/appkit'
 import { PROPOSAL_CHAIN_ID, CREDIT_DECIMALS } from '~/constants/proposalConstants'
 import PWN_CROWDSOURCE_LENDER_VAULT_ABI from '~/assets/abis/v1.5/PWNCrowdsourceLenderVault'
 import { mainnet, sepolia } from "viem/chains"
@@ -121,7 +121,7 @@ const calculateLenderBalances = async (events: MoralisTransferEvent[], vaultAddr
     }))
 
     // Call convertToAssets for the batch
-    const results = await readContracts(wagmiConfig, {
+    const results = await readContracts(getWagmiConfig(), {
       contracts,
       allowFailure: false,
     })

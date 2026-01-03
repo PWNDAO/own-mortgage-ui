@@ -1,5 +1,5 @@
 import { getEnsName } from '@wagmi/core/actions'
-import { wagmiConfig } from '~/config/appkit'
+import { getWagmiConfig } from '~/config/appkit'
 import { mainnet } from 'viem/chains'
 import { useQuery } from '@tanstack/vue-query'
 import type { Address } from 'viem'
@@ -39,7 +39,7 @@ export const useEnsNames = (addresses: Ref<Address[]> | Address[]) => {
       const results = await Promise.allSettled(
         addressesRef.value.map(async (address) => {
           try {
-            const ensName = await getEnsName(wagmiConfig, {
+            const ensName = await getEnsName(getWagmiConfig(), {
               address,
               chainId: mainnet.id,
             })

@@ -4,11 +4,11 @@ import { getAccount, getBlockNumber, getPublicClient, getTransaction, getTransac
 import type { WriteContractVariables } from '@wagmi/core/query'
 import type { AnyFunction, IntervalId } from '@/typing/customTypes'
 import type { ToastStep } from '~/components/ui/toast/useToastsStore'
-import { wagmiConfig, type WagmiConfig } from '~/config/appkit'
+import { getWagmiConfig, type WagmiConfig } from '~/config/appkit'
 import { SAFE_WALLET_ABI } from '~/assets/abis/SafeWalletAbi'
 import { useConnectedAccountTypeStore } from './useConnectedAccountTypeStore'
 
- 
+
 export interface SendTransactionHooks {
   onWriteContractSuccess?: AnyFunction
   onTxConfirmSuccess?: AnyFunction
@@ -32,19 +32,19 @@ export async function sendTransaction<
   console.log('Starting to send a transaction with following parameters:')
   console.log(transaction)
 
-  const connectedChainId = getAccount(wagmiConfig).chainId
+  const connectedChainId = getAccount(getWagmiConfig()).chainId
   console.log(`connectedChainId=${connectedChainId}; transaction.chainId=${transaction.chainId}`)
 
   if (connectedChainId !== transaction.chainId) {
     console.log(`Switching chain from ${connectedChainId} to ${transaction.chainId}.`)
-    const switchedChain = await switchChain(wagmiConfig, { chainId: transaction.chainId! })
+    const switchedChain = await switchChain(getWagmiConfig(), { chainId: transaction.chainId! })
     if (switchedChain.id !== transaction.chainId) {
       throw new Error('User denied switching chains before sending a tx.')
     }
   }
 
   // note: if signing with a Safe{Wallet}, the txHash is safeTxHash and not the real txHash
-  const [writeTxError, txHash] = await to(writeContract(wagmiConfig, transaction))
+  const [writeTxError, txHash] = await to(writeContract(getWagmiConfig(), transaction))
   if (writeTxError || !txHash) {
     if (hooks?.onWriteContractError) {
       hooks.onWriteContractError()
@@ -63,19 +63,19 @@ export async function sendTransaction<
   //  and if yes, we assign it to the step.txHash
   if (step && !useConnectedAccountTypeStore().safeThreshold) {
     try {
-      await getTransaction(wagmiConfig, {
+      await getTransaction(getWagmiConfig(), {
         hash: txHash,
         chainId: transaction.chainId,
       })
       step.txHash = txHash
-    // eslint-disable-next-line
-    } catch (error) {}
+      // eslint-disable-next-line
+    } catch (error) { }
   }
 
   let txReceipt: TransactionReceipt | undefined
   let confirmTxError: Error | null = null
   if (useConnectedAccountTypeStore().isConnectedContractWallet) {
-    const contractWalletAddress = getAccount(wagmiConfig).address!
+    const contractWalletAddress = getAccount(getWagmiConfig()).address!
 
     txReceipt = await new Promise<TransactionReceipt>((resolve) => {
       const contractEventParameters = {
@@ -85,9 +85,9 @@ export async function sendTransaction<
         chainId: transaction.chainId,
       } as const
 
-      const unwatch = watchContractEvent(wagmiConfig, {
+      const unwatch = watchContractEvent(getWagmiConfig(), {
         ...contractEventParameters,
-         
+
         async onLogs(logs) {
           console.log('Received following logs from the contract wallet: ')
           console.log(logs)
@@ -104,7 +104,7 @@ export async function sendTransaction<
           }
 
           unwatch()
-          const txReceipt = await getTransactionReceipt(wagmiConfig, { hash: log.transactionHash, chainId: transaction.chainId })
+          const txReceipt = await getTransactionReceipt(getWagmiConfig(), { hash: log.transactionHash, chainId: transaction.chainId })
           console.log('Contract wallet has successfully executed a transaction!')
           resolve(txReceipt)
         },
@@ -113,9 +113,9 @@ export async function sendTransaction<
 
       // it can also happen that the tx event already happened before setting up a watched, so we need to also
       // look at past X blocks to see if the event is there
-      getBlockNumber(wagmiConfig, { chainId: transaction.chainId })
+      getBlockNumber(getWagmiConfig(), { chainId: transaction.chainId })
         .then(currentBlockNumber => {
-          return getPublicClient(wagmiConfig, { chainId: transaction.chainId! })!.getContractEvents({
+          return getPublicClient(getWagmiConfig(), { chainId: transaction.chainId! })!.getContractEvents({
             ...contractEventParameters,
             fromBlock: currentBlockNumber - 500n,
           })
@@ -131,11 +131,11 @@ export async function sendTransaction<
           console.log(log)
 
           if (step && !step.txHash) {
-              step.txHash = log.transactionHash
-            }
+            step.txHash = log.transactionHash
+          }
 
           unwatch()
-          return getTransactionReceipt(wagmiConfig, { hash: log.transactionHash, chainId: transaction.chainId })
+          return getTransactionReceipt(getWagmiConfig(), { hash: log.transactionHash, chainId: transaction.chainId })
         }).then(txReceipt => {
           if (txReceipt) {
             console.log('Contract wallet has successfully executed a transaction!')
@@ -160,7 +160,7 @@ export async function sendTransaction<
       }, INTERVAL_TIME)
     }
 
-    [confirmTxError, txReceipt] = await to(waitForTransactionReceipt(wagmiConfig, { hash: txHash, chainId: transaction.chainId, retryCount: 10 }))
+    [confirmTxError, txReceipt] = await to(waitForTransactionReceipt(getWagmiConfig(), { hash: txHash, chainId: transaction.chainId, retryCount: 10 }))
 
     if (intervalId !== undefined) {
       clearInterval(intervalId)
@@ -186,4 +186,3 @@ export async function sendTransaction<
 
   return txReceipt
 }
- 
