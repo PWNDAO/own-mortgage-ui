@@ -9,6 +9,7 @@
     "generate": "nuxt generate",
     "generate-cf-pages": "nuxt generate --preset=cloudflare_pages",
     "preview": "nuxt preview",
+    "preview-cf-pages": "bun run build-cf-pages && wrangler pages dev dist/",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

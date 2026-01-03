@@ -12,6 +12,7 @@ if (!projectId) {
 }
 
 export const wagmiAdapter = new WagmiAdapter({
+  ssr: true,
   networks,
   projectId,
 });
