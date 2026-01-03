@@ -8,40 +8,7 @@ import PWN_CROWDSOURCE_LENDER_VAULT_ABI from '~/assets/abis/v1.5/PWNCrowdsourceL
 import { mainnet, sepolia } from "viem/chains"
 import { formatAmount } from "~/lib/format-decimals"
 
-// Types for Moralis API response
-interface MoralisTransferEvent {
-  token_name: string
-  token_symbol: string
-  token_logo: string | null
-  token_decimals: string
-  from_address_entity: string | null
-  from_address_entity_logo: string | null
-  from_address: string
-  from_address_label: string | null
-  to_address_entity: string | null
-  to_address_entity_logo: string | null
-  to_address: string
-  to_address_label: string | null
-  address: string
-  block_hash: string
-  block_number: string
-  block_timestamp: string
-  transaction_hash: string
-  transaction_index: number
-  log_index: number
-  value: string
-  possible_spam: boolean
-  value_decimal: string
-  verified_contract: boolean
-  security_score: number | null
-}
-
-interface MoralisResponse {
-  page: number
-  page_size: number
-  cursor: string | null
-  result: MoralisTransferEvent[]
-}
+import type { MoralisTransferEvent, MoralisResponse } from '~/typing/moralis'
 
 interface CrowdsourceLender {
   address: string
@@ -50,7 +17,6 @@ interface CrowdsourceLender {
 }
 
 // Moralis API configuration
-const MORALIS_BASE_URL = 'https://deep-index.moralis.io/api/v2.2'
 const CHAIN_ID_TO_MORALIS_CHAIN_ARG = {
   [mainnet.id]: 'eth',
   [sepolia.id]: 'sepolia'
@@ -62,59 +28,33 @@ const CHAIN = CHAIN_ID_TO_MORALIS_CHAIN_ARG[PROPOSAL_CHAIN_ID]
 const lastFetchTimestamp = useLocalStorage<null | string>('crowdsource_lender_last_fetch_timestamp', null)
 const crowdsourceLendersCache = useLocalStorage<null | CrowdsourceLender[]>('crowdsource_lenders_cache', null)
 
-// Get Moralis API key from environment
-const getMoralisApiKey = () => {
-  const apiKey = useRuntimeConfig().public.moralisApiKey
-  if (!apiKey) {
-    throw new Error('NUXT_PUBLIC_MORALIS_API_KEY environment variable is required')
-  }
-  return apiKey
-}
-
 // Fetch transfer events from Moralis API with pagination
 const fetchAllTransferEvents = async (vaultAddress: Address, fromDate?: string): Promise<MoralisTransferEvent[]> => {
-  const apiKey = getMoralisApiKey()
   const allEvents: MoralisTransferEvent[] = []
   let cursor: string | null = null
   let page = 0
 
   do {
-    const url = new URL(`${MORALIS_BASE_URL}/erc20/${vaultAddress}/transfers`)
-    url.searchParams.set('chain', CHAIN)
-    url.searchParams.set('order', 'DESC')
-    url.searchParams.set('page_size', '100')
-    
-    if (fromDate) {
-      url.searchParams.set('from_date', fromDate)
-    }
-    
-    if (cursor) {
-      url.searchParams.set('cursor', cursor)
-    }
-
-    const response = await fetch(url.toString(), {
-      headers: {
-        'accept': 'application/json',
-        'X-API-Key': apiKey
+    const response: MoralisResponse = await $fetch('/api/moralis/transfer-events', {
+      query: {
+        vaultAddress,
+        chain: CHAIN,
+        fromDate,
+        cursor
       }
     })
 
-    if (!response.ok) {
-      throw new Error(`Moralis API error: ${response.status} ${response.statusText}`)
-    }
+    allEvents.push(...response.result)
 
-    const data: MoralisResponse = await response.json()
-    allEvents.push(...data.result)
-    
-    cursor = data.cursor
+    cursor = response.cursor
     page++
-    
+
     // Safety check to prevent infinite loops
     if (page > 10000) {
       console.warn('Reached maximum page limit (10000) for transfer events')
       break
     }
-    
+
   } while (cursor)
 
   return allEvents
@@ -149,12 +89,12 @@ const balancesToLenders = (balances: Record<string, bigint>): CrowdsourceLender[
 // Converts shares to assets using convertToAssets contract function
 const calculateLenderBalances = async (events: MoralisTransferEvent[], vaultAddress: Address): Promise<Record<string, bigint>> => {
   const balances: Record<string, bigint> = {}
-  
+
   // Convert shares to assets in batches of 25
   const BATCH_SIZE = 25
   const shareValues: bigint[] = []
   const eventIndices: number[] = []
-  
+
   // Collect all share values and their indices
   for (let i = 0; i < events.length; i++) {
     const event = events[i]
@@ -163,14 +103,14 @@ const calculateLenderBalances = async (events: MoralisTransferEvent[], vaultAddr
     shareValues.push(value)
     eventIndices.push(i)
   }
-  
+
   // Process in batches
   const assetValues: bigint[] = new Array(events.length).fill(0n)
-  
+
   for (let i = 0; i < shareValues.length; i += BATCH_SIZE) {
     const batch = shareValues.slice(i, i + BATCH_SIZE)
     const batchIndices = eventIndices.slice(i, i + BATCH_SIZE)
-    
+
     // Create contracts array for this batch
     const contracts = batch.map((shares) => ({
       abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
@@ -179,13 +119,13 @@ const calculateLenderBalances = async (events: MoralisTransferEvent[], vaultAddr
       args: [shares] as const,
       chainId: PROPOSAL_CHAIN_ID,
     }))
-    
+
     // Call convertToAssets for the batch
     const results = await readContracts(wagmiConfig, {
       contracts,
       allowFailure: false,
     })
-    
+
     // Store the converted asset values
     for (let j = 0; j < batch.length; j++) {
       const eventIndex = batchIndices[j]
@@ -225,7 +165,7 @@ const calculateLenderBalances = async (events: MoralisTransferEvent[], vaultAddr
       if (!balances[toAddress]) {
         balances[toAddress] = 0n
       }
-      
+
       balances[fromAddress] -= value
       balances[toAddress] += value
     }
@@ -263,48 +203,43 @@ const mergeLendersFromVaults = (oldVaultLenders: CrowdsourceLender[], newVaultLe
 export const loadCrowdsourceLenders = async (forceRefresh: boolean = false) => {
   try {
     const fromDate = forceRefresh ? undefined : (lastFetchTimestamp.value?.length ? lastFetchTimestamp.value : undefined)
-    
-    // Fetch transfer events from both vaults
+
+    // Fetch transfer events from both vaults (either since last fetch or all)
     const [oldVaultEvents, newVaultEvents] = await Promise.all([
       fetchAllTransferEvents(OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, fromDate),
       fetchAllTransferEvents(PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, fromDate)
     ])
-    
-    if (oldVaultEvents.length === 0 && newVaultEvents.length === 0 && !forceRefresh) {
-      // No new events and not forcing refresh, keep existing cache
-      return crowdsourceLendersCache.value || []
-    }
 
-    let oldVaultLenders: CrowdsourceLender[]
-    let newVaultLenders: CrowdsourceLender[]
+    let allOldEvents: MoralisTransferEvent[] = []
+    let allNewEvents: MoralisTransferEvent[] = []
 
-    if (fromDate && crowdsourceLendersCache.value && !forceRefresh) {
-      // Incremental update: merge cached data with new events
-      // For incremental updates, we need to recalculate from all events
-      // because we can't easily separate old and new vault balances in cache
-      const [allOldEvents, allNewEvents] = await Promise.all([
-        fetchAllTransferEvents(OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS),
-        fetchAllTransferEvents(PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS)
-      ])
-      const [oldBalances, newBalances] = await Promise.all([
-        calculateLenderBalances(allOldEvents, OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS),
-        calculateLenderBalances(allNewEvents, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS)
-      ])
-      oldVaultLenders = balancesToLenders(oldBalances)
-      newVaultLenders = balancesToLenders(newBalances)
+    if (!fromDate) {
+      // Full refresh: use the events we just fetched since fromDate was undefined
+      allOldEvents = oldVaultEvents
+      allNewEvents = newVaultEvents
     } else {
-      // Full refresh: calculate all balances from all events
-      const [allOldEvents, allNewEvents] = await Promise.all([
+      // Incremental check: if no new events, keep existing cache
+      if (oldVaultEvents.length === 0 && newVaultEvents.length === 0) {
+        return crowdsourceLendersCache.value || []
+      }
+
+      // If there are new events, we must fetch ALL events to recalculate balances
+      const [allOld, allNew] = await Promise.all([
         fetchAllTransferEvents(OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS),
         fetchAllTransferEvents(PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS)
       ])
-      const [oldBalances, newBalances] = await Promise.all([
-        calculateLenderBalances(allOldEvents, OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS),
-        calculateLenderBalances(allNewEvents, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS)
-      ])
-      oldVaultLenders = balancesToLenders(oldBalances)
-      newVaultLenders = balancesToLenders(newBalances)
+      allOldEvents = allOld
+      allNewEvents = allNew
     }
+
+    // Process balances from the events we've secured
+    const [oldBalances, newBalances] = await Promise.all([
+      calculateLenderBalances(allOldEvents, OLD_PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS),
+      calculateLenderBalances(allNewEvents, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS)
+    ])
+
+    const oldVaultLenders = balancesToLenders(oldBalances)
+    const newVaultLenders = balancesToLenders(newBalances)
 
     // Merge lenders from both vaults
     let mergedLenders = mergeLendersFromVaults(oldVaultLenders, newVaultLenders)
@@ -358,11 +293,11 @@ export const useCrowdsourceLender = () => {
     lenders: readonly(lenders),
     totalLenders,
     lastFetchTime: readonly(lastFetchTimestamp),
-    
+
     // State
     isLoading: readonly(isLoading),
     error: readonly(error),
-    
+
     // Methods
     loadLenders,
     refreshLenders: () => loadLenders(true),

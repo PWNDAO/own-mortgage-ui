@@ -24,10 +24,10 @@ export default defineNuxtConfig({
     // setting pathPrefix to false, as with it the auto imports on cloudflare pages did not
     //  correctly work for some unknown reason
     dirs: [
-      { path: "~/components", pathPrefix: false }, 
-      { path: "~/components/ui", pathPrefix: false }, 
-      { path: "~/components/boxes", pathPrefix: false }, 
-      { path: "~/components/modals", pathPrefix: false }, 
+      { path: "~/components", pathPrefix: false },
+      { path: "~/components/ui", pathPrefix: false },
+      { path: "~/components/boxes", pathPrefix: false },
+      { path: "~/components/modals", pathPrefix: false },
       { path: "~/components/icons", pathPrefix: false }
     ],
   },
@@ -67,10 +67,10 @@ export default defineNuxtConfig({
     checker: true,
   },
   runtimeConfig: {
+    moralisApiKey: process.env.NUXT_MORALIS_API_KEY,
     public: {
       // TODO is this okay or will our API key gets exposed and someone can use it?
       //  is there a way how to restrict the key usage to only few domains?
-      moralisApiKey: process.env.NUXT_PUBLIC_MORALIS_API_KEY,
       clarityId: process.env.NUXT_PUBLIC_CLARITY_ID,
     }
   },
