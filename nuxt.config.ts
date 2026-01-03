@@ -12,7 +12,11 @@ export default defineNuxtConfig({
   ssr: true,
   css: ["~/assets/css/tailwind.css"],
   nitro: {
-    preset: 'cloudflare-pages',
+    preset: 'cloudflare_pages',
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true
+    },
     alias: {
       // TODO is this good resolution?
       /// it's relevant to this: https://github.com/MetaMask/metamask-sdk/issues/1376
