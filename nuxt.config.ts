@@ -17,22 +17,17 @@ export default defineNuxtConfig({
       deployConfig: true,
       nodeCompat: true
     },
-    // Exclude Web3 packages from SSR bundle - they use Node.js APIs incompatible with Workers
-    rollupConfig: {
-      external: [
-        '@reown/appkit',
-        '@reown/appkit/vue',
-        '@reown/appkit-adapter-wagmi',
-        '@wagmi/vue',
-        '@wagmi/core',
-        'wagmi',
-        'viem',
-        '@coinbase/wallet-sdk',
-        '@walletconnect/ethereum-provider',
-        '@safe-global/safe-apps-sdk',
-      ]
-    },
     alias: {
+      // Mock Web3 packages for SSR - they only run client-side
+      '@reown/appkit': 'unenv/runtime/mock/empty',
+      '@reown/appkit/vue': 'unenv/runtime/mock/empty',
+      '@reown/appkit-adapter-wagmi': 'unenv/runtime/mock/empty',
+      '@wagmi/vue': 'unenv/runtime/mock/empty',
+      '@wagmi/core': 'unenv/runtime/mock/empty',
+      'wagmi': 'unenv/runtime/mock/empty',
+      '@coinbase/wallet-sdk': 'unenv/runtime/mock/empty',
+      '@walletconnect/ethereum-provider': 'unenv/runtime/mock/empty',
+      '@safe-global/safe-apps-sdk': 'unenv/runtime/mock/empty',
       // TODO is this good resolution?
       /// it's relevant to this: https://github.com/MetaMask/metamask-sdk/issues/1376
       '@react-native-async-storage/async-storage': 'unenv/runtime/mock/empty',
