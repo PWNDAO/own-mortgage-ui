@@ -14,7 +14,11 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'cloudflare-pages',
     alias: {
-      '@react-native-async-storage/async-storage': 'unenv/runtime/mock/empty.mjs'
+      // TODO is this good resolution?
+      /// it's relevant to this: https://github.com/MetaMask/metamask-sdk/issues/1376
+      '@react-native-async-storage/async-storage': 'unenv/runtime/mock/empty',
+      // TODO is it fine to do?
+      'pino-pretty': 'unenv/runtime/mock/empty'
     }
   },
   imports: {
