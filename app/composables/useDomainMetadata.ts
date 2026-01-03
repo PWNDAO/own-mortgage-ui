@@ -13,21 +13,18 @@ export interface DomainMetadataResult extends DomainMetadata {
  * Composable that returns metadata based on the current request domain.
  * Works on both server (SSR) and client side using `useRequestURL()`.
  */
-export function useDomainMetadata(): ComputedRef<DomainMetadataResult> {
+export function useDomainMetadata() {
   const url = useRequestURL()
+  const hostname = url.hostname.toLowerCase()
+  const origin = url.origin
+  const metadata = getMetadataForDomain(hostname)
 
-  return computed(() => {
-    const hostname = url.hostname.toLowerCase()
-    const origin = url.origin
-    const metadata = getMetadataForDomain(hostname)
-
-    return {
-      ...metadata,
-      ogImage: `${origin}${metadata.ogImagePath}`,
-      hostname,
-      origin,
-    }
-  })
+  return {
+    ...metadata,
+    ogImage: `${origin}${metadata.ogImagePath}`,
+    hostname,
+    origin,
+  }
 }
 
 /**
@@ -38,22 +35,27 @@ export function useDomainSeoMeta(overrides?: Partial<DomainMetadata>) {
   const metadata = useDomainMetadata()
   const url = useRequestURL()
 
+  const title = overrides?.title ?? metadata.title
+  const description = overrides?.description ?? metadata.description
+  const ogImage = overrides?.ogImagePath ? `${metadata.origin}${overrides.ogImagePath}` : metadata.ogImage
+  const keywords = overrides?.keywords ?? metadata.keywords
+
   useSeoMeta({
-    title: () => overrides?.title ?? metadata.value.title,
-    description: () => overrides?.description ?? metadata.value.description,
-    ogTitle: () => overrides?.title ?? metadata.value.title,
-    ogDescription: () => overrides?.description ?? metadata.value.description,
-    ogImage: () => overrides?.ogImagePath ? `${metadata.value.origin}${overrides.ogImagePath}` : metadata.value.ogImage,
-    ogUrl: () => url.href,
+    title,
+    description,
+    ogTitle: title,
+    ogDescription: description,
+    ogImage,
+    ogUrl: url.href,
     ogType: 'website',
-    ogSiteName: () => metadata.value.title,
+    ogSiteName: title,
     twitterCard: 'summary_large_image',
-    twitterTitle: () => overrides?.title ?? metadata.value.title,
-    twitterDescription: () => overrides?.description ?? metadata.value.description,
-    twitterImage: () => overrides?.ogImagePath ? `${metadata.value.origin}${overrides.ogImagePath}` : metadata.value.ogImage,
+    twitterTitle: title,
+    twitterDescription: description,
+    twitterImage: ogImage,
     themeColor: '#000000',
     robots: 'index, follow',
     author: 'OWN Labs',
-    keywords: () => overrides?.keywords ?? metadata.value.keywords,
+    keywords,
   })
 }

@@ -20,7 +20,7 @@ useDomainSeoMeta()
 
 // Basic head config (favicon, etc.)
 useHead({
-  title: () => metadata.value.title,
+  title: metadata.title,
   link: [
     {
       rel: 'icon',
@@ -44,8 +44,8 @@ onMounted(async () => {
     networks,
     projectId,
     metadata: {
-      name: metadata.value.title,
-      description: metadata.value.description,
+      name: metadata.title,
+      description: metadata.description,
       url: APP_URL,
       icons: [APP_ICON],
     },
