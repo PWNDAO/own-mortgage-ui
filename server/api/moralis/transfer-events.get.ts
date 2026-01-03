@@ -23,19 +23,23 @@ export default defineEventHandler(async (event) => {
         })
     }
 
+    const queryParams = {
+        chain: (chain as string) || 'eth',
+        order: 'DESC',
+        page_size: '100',
+        from_date: fromDate as string,
+    } as Record<string, string>
+    if (cursor && cursor?.toString()?.length > 0) {
+        queryParams.cursor = cursor as string
+    }
+
     try {
         return await $fetch<MoralisResponse>(`${MORALIS_BASE_URL}/erc20/${vaultAddress}/transfers`, {
             headers: {
                 'accept': 'application/json',
                 'X-API-Key': apiKey,
             },
-            query: {
-                chain: (chain as string) || 'eth',
-                order: 'DESC',
-                page_size: '100',
-                from_date: fromDate as string,
-                cursor: cursor as string,
-            }
+            query: queryParams,
         })
     } catch (error: unknown) {
         console.error('Error proxying to Moralis:', error)
