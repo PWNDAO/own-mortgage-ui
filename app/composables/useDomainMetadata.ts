@@ -13,22 +13,19 @@ export interface DomainMetadataResult extends DomainMetadata {
  * Composable that returns metadata based on the current request domain.
  * Works on both server (SSR) and client side using `useRequestURL()`.
  */
-export function useDomainMetadata(): ComputedRef<DomainMetadataResult> {
-  const url = useRequestURL()
+export function useDomainMetadata(): DomainMetadataResult {
+  const hostname = 'bordel.ownlabs.co'
+  const origin = 'https://bordel.ownlabs.co'
 
-  return computed(() => {
-    const hostname = url.hostname.toLowerCase()
-    const origin = url.origin
-    // Metadata is now hardcoded/static
-    const metadata = getMetadataForDomain(hostname)
+  // Metadata is now hardcoded/static
+  const metadata = getMetadataForDomain(hostname)
 
-    return {
-      ...metadata,
-      ogImage: `${origin}${metadata.ogImagePath}`,
-      hostname,
-      origin,
-    }
-  })
+  return {
+    ...metadata,
+    ogImage: `${origin}${metadata.ogImagePath}`,
+    hostname,
+    origin,
+  }
 }
 
 /**
@@ -37,24 +34,23 @@ export function useDomainMetadata(): ComputedRef<DomainMetadataResult> {
  */
 export function useDomainSeoMeta(overrides?: Partial<DomainMetadata>) {
   const metadata = useDomainMetadata()
-  const url = useRequestURL()
 
   useSeoMeta({
-    title: () => overrides?.title ?? metadata.value.title,
-    description: () => overrides?.description ?? metadata.value.description,
-    ogTitle: () => overrides?.title ?? metadata.value.title,
-    ogDescription: () => overrides?.description ?? metadata.value.description,
-    ogImage: () => overrides?.ogImagePath ? `${metadata.value.origin}${overrides.ogImagePath}` : metadata.value.ogImage,
-    ogUrl: () => url.href,
+    title: () => overrides?.title ?? metadata.title,
+    description: () => overrides?.description ?? metadata.description,
+    ogTitle: () => overrides?.title ?? metadata.title,
+    ogDescription: () => overrides?.description ?? metadata.description,
+    ogImage: () => overrides?.ogImagePath ? `${metadata.origin}${overrides.ogImagePath}` : metadata.ogImage,
+    ogUrl: () => `${metadata.origin}`,
     ogType: 'website',
-    ogSiteName: () => metadata.value.title,
+    ogSiteName: () => metadata.title,
     twitterCard: 'summary_large_image',
-    twitterTitle: () => overrides?.title ?? metadata.value.title,
-    twitterDescription: () => overrides?.description ?? metadata.value.description,
-    twitterImage: () => overrides?.ogImagePath ? `${metadata.value.origin}${overrides.ogImagePath}` : metadata.value.ogImage,
+    twitterTitle: () => overrides?.title ?? metadata.title,
+    twitterDescription: () => overrides?.description ?? metadata.description,
+    twitterImage: () => overrides?.ogImagePath ? `${metadata.origin}${overrides.ogImagePath}` : metadata.ogImage,
     themeColor: '#000000',
     robots: 'index, follow',
     author: 'OWN Labs',
-    keywords: () => overrides?.keywords ?? metadata.value.keywords,
+    keywords: () => overrides?.keywords ?? metadata.keywords,
   })
 }

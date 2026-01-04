@@ -34,8 +34,7 @@ const fetchAllTransferEvents = async (vaultAddress: Address, fromDate?: string):
   const apiKey = config.public.moralisApiKey as string
 
   if (!apiKey) {
-    console.warn('Moralis API key is missing in public config')
-    return []
+    throw new Error('NUXT_PUBLIC_MORALIS_API_KEY environment variable is required')
   }
 
   const allEvents: MoralisTransferEvent[] = []
@@ -45,31 +44,34 @@ const fetchAllTransferEvents = async (vaultAddress: Address, fromDate?: string):
 
   do {
     try {
-      const query: Record<string, string> = {
-        chain: CHAIN,
-        order: 'DESC',
-        page_size: '100',
-      }
-
+      const url = new URL(`${MORALIS_BASE_URL}/erc20/${vaultAddress}/transfers`)
+      url.searchParams.set('chain', CHAIN)
+      url.searchParams.set('order', 'DESC')
+      url.searchParams.set('page_size', '100')
+      
       if (fromDate) {
-        query.from_date = fromDate
+        url.searchParams.set('from_date', fromDate)
       }
-
+      
       if (cursor) {
-        query.cursor = cursor
+        url.searchParams.set('cursor', cursor)
       }
 
-      const response = await $fetch<MoralisResponse>(`${MORALIS_BASE_URL}/erc20/${vaultAddress}/transfers`, {
+      const response = await fetch(url.toString(), {
         headers: {
           'accept': 'application/json',
-          'X-API-Key': apiKey,
-        },
-        query
+          'X-API-Key': apiKey
+        }
       })
 
-      allEvents.push(...response.result)
+      if (!response.ok) {
+        throw new Error(`Moralis API error: ${response.status} ${response.statusText}`)
+      }
 
-      cursor = response.cursor
+      const data: MoralisResponse = await response.json()
+      allEvents.push(...data.result)
+
+      cursor = data.cursor
       page++
 
       // Safety check to prevent infinite loops
