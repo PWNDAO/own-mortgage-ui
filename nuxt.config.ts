@@ -12,12 +12,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
   css: ["~/assets/css/tailwind.css"],
-  nitro: {
-    preset: 'cloudflare_pages',
-    cloudflare: {
-      deployConfig: true,
-      nodeCompat: true
-    },
+  //nitro: {
+    //preset: 'cloudflare_pages',
+    //cloudflare: {
+      //deployConfig: true,
+      //nodeCompat: true
+    //},
     // alias: {
       // Mock Web3 packages for SSR - they only run client-side
       // '@reown/appkit': 'unenv/runtime/mock/empty',
@@ -35,7 +35,7 @@ export default defineNuxtConfig({
       // TODO is it fine to do?
       // 'pino-pretty': 'unenv/runtime/mock/empty'
     // }
-  },
+  //},
   imports: {
     autoImport: true,
   },
