@@ -30,29 +30,56 @@ const crowdsourceLendersCache = useLocalStorage<null | CrowdsourceLender[]>('cro
 
 // Fetch transfer events from Moralis API with pagination
 const fetchAllTransferEvents = async (vaultAddress: Address, fromDate?: string): Promise<MoralisTransferEvent[]> => {
+  const config = useRuntimeConfig()
+  const apiKey = config.public.moralisApiKey as string
+
+  if (!apiKey) {
+    console.warn('Moralis API key is missing in public config')
+    return []
+  }
+
   const allEvents: MoralisTransferEvent[] = []
   let cursor: string | null = null
   let page = 0
+  const MORALIS_BASE_URL = 'https://deep-index.moralis.io/api/v2.2'
 
   do {
-    const response: MoralisResponse = await $fetch('/api/moralis/transfer-events', {
-      query: {
-        vaultAddress,
+    try {
+      const query: Record<string, string> = {
         chain: CHAIN,
-        fromDate,
-        cursor
+        order: 'DESC',
+        page_size: '100',
       }
-    })
 
-    allEvents.push(...response.result)
+      if (fromDate) {
+        query.from_date = fromDate
+      }
 
-    cursor = response.cursor
-    page++
+      if (cursor) {
+        query.cursor = cursor
+      }
 
-    // Safety check to prevent infinite loops
-    if (page > 10000) {
-      console.warn('Reached maximum page limit (10000) for transfer events')
-      break
+      const response = await $fetch<MoralisResponse>(`${MORALIS_BASE_URL}/erc20/${vaultAddress}/transfers`, {
+        headers: {
+          'accept': 'application/json',
+          'X-API-Key': apiKey,
+        },
+        query
+      })
+
+      allEvents.push(...response.result)
+
+      cursor = response.cursor
+      page++
+
+      // Safety check to prevent infinite loops
+      if (page > 10000) {
+        console.warn('Reached maximum page limit (10000) for transfer events')
+        break
+      }
+    } catch (e) {
+      console.error('Error fetching events from Moralis:', e)
+      throw e
     }
 
   } while (cursor)

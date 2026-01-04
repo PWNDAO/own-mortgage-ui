@@ -19,6 +19,7 @@ export function useDomainMetadata(): ComputedRef<DomainMetadataResult> {
   return computed(() => {
     const hostname = url.hostname.toLowerCase()
     const origin = url.origin
+    // Metadata is now hardcoded/static
     const metadata = getMetadataForDomain(hostname)
 
     return {
