@@ -12,7 +12,6 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@microsoft/clarity": "^1.0.2",
     "@nuxt/eslint": "^1.10.0",
     "@nuxt/image": "^2.0.0",
     "@pinia/nuxt": "^0.11.3",

@@ -2,22 +2,20 @@ export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
   
   // Only initialize if clarityId is provided
-  if (config.public.clarityId) {
+  if (config.public.clarityId && typeof window !== 'undefined') {
     try {
-      // Dynamically load and initialize Clarity
-      import('@microsoft/clarity').then((module) => {
-        const clarity = module.default || module
-        if (clarity && typeof clarity.start === 'function') {
-          clarity.start({
-            projectId: config.public.clarityId,
-            upload: 'https://www.clarity.ms/collect',
-            track: true,
-            content: true
-          })
+      // Inject Clarity script directly (avoiding npm package compatibility issues)
+      // eslint-disable-next-line prefer-rest-params, @typescript-eslint/no-explicit-any
+      (function(c: any, l: any, a: any, r: any, i: any, t: any, y: any) {
+        c[a] = c[a] || function(...args: any[]) {
+          (c[a].q = c[a].q || []).push(args)
         }
-      }).catch((error) => {
-        console.warn('Failed to load Microsoft Clarity:', error)
-      })
+        t = l.createElement(r)
+        t.async = 1
+        t.src = "https://www.clarity.ms/tag/" + i
+        y = l.getElementsByTagName(r)[0]
+        y.parentNode.insertBefore(t, y)
+      })(window, document, "clarity", "script", config.public.clarityId)
     } catch (error) {
       console.warn('Failed to initialize Microsoft Clarity:', error)
     }
