@@ -1,0 +1,4 @@
+{
+  "eslint.useFlatConfig": true,
+  "eslint.codeActionsOnSave.mode": "all"
+}
