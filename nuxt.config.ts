@@ -1,4 +1,9 @@
 import tailwindcss from "@tailwindcss/vite";
+import Decimal from "decimal.js"
+
+// Configure Decimal.js to use normal notation instead of scientific notation
+Decimal.config({ toExpPos: 9000000000000000 })
+Decimal.config({ toExpNeg: -9000000000000000 })
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -13,7 +18,7 @@ export default defineNuxtConfig({
       deployConfig: true,
       nodeCompat: true
     },
-    alias: {
+    // alias: {
       // Mock Web3 packages for SSR - they only run client-side
       // '@reown/appkit': 'unenv/runtime/mock/empty',
       // '@reown/appkit/vue': 'unenv/runtime/mock/empty',
@@ -26,10 +31,10 @@ export default defineNuxtConfig({
       // '@safe-global/safe-apps-sdk': 'unenv/runtime/mock/empty',
       // TODO is this good resolution?
       /// it's relevant to this: https://github.com/MetaMask/metamask-sdk/issues/1376
-      '@react-native-async-storage/async-storage': 'unenv/runtime/mock/empty',
+      // '@react-native-async-storage/async-storage': 'unenv/runtime/mock/empty',
       // TODO is it fine to do?
-      'pino-pretty': 'unenv/runtime/mock/empty'
-    }
+      // 'pino-pretty': 'unenv/runtime/mock/empty'
+    // }
   },
   imports: {
     autoImport: true,
@@ -81,10 +86,8 @@ export default defineNuxtConfig({
     checker: true,
   },
   runtimeConfig: {
-    moralisApiKey: process.env.NUXT_MORALIS_API_KEY,
     public: {
-      // TODO is this okay or will our API key gets exposed and someone can use it?
-      //  is there a way how to restrict the key usage to only few domains?
+      moralisApiKey: process.env.NUXT_PUBLIC_MORALIS_API_KEY,
       clarityId: process.env.NUXT_PUBLIC_CLARITY_ID,
     }
   },

@@ -38,7 +38,7 @@ useHead({
 onMounted(async () => {
   const { createAppKit } = await import("@reown/appkit/vue")
   const { wagmiAdapter, networks, projectId } = await import("./config/appkit")
-  
+
   createAppKit({
     adapters: [wagmiAdapter],
     networks,
