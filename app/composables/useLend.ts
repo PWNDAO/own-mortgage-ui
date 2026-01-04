@@ -4,7 +4,7 @@ import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, OLD_PWN_CROWDSOURCE_LENDER_VAULT_
 import { CREDIT_ADDRESS } from "~/constants/proposalConstants"
 import { useAccount } from "@wagmi/vue"
 import { readContract } from "@wagmi/core/actions"
-import { getWagmiConfig } from "~/config/appkit"
+import { wagmiConfig } from "~/config/appkit"
 import { sendTransaction } from "./useTransactions"
 import type { ToastStep } from "~/components/ui/toast/useToastsStore"
 
@@ -20,7 +20,7 @@ export default function useLend() {
                 return false // No additional deposit, no approval needed
             }
 
-            const currentAllowance = await readContract(getWagmiConfig(), {
+            const currentAllowance = await readContract(wagmiConfig, {
                 abi: erc20Abi,
                 functionName: 'allowance',
                 args: [userAddress.value!, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS],
@@ -42,7 +42,7 @@ export default function useLend() {
             return true // No additional deposit, no approval needed
         }
 
-        const currentAllowance = await readContract(getWagmiConfig(), {
+        const currentAllowance = await readContract(wagmiConfig, {
             abi: erc20Abi,
             functionName: 'allowance',
             args: [userAddress.value!, PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS],

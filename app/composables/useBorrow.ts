@@ -3,7 +3,7 @@ import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, PWN_INSTALLMENTS_PRODUCT_ADDRESS,
 import { COLLATERAL_ADDRESS, COLLATERAL_DECIMALS, CREDIT_ADDRESS, PROPOSAL_CHAIN_ID } from "~/constants/proposalConstants"
 import { useAccount } from "@wagmi/vue"
 import { readContract, simulateContract } from "@wagmi/core/actions"
-import { getWagmiConfig } from "~/config/appkit"
+import { wagmiConfig } from "~/config/appkit"
 import { sendTransaction } from "./useTransactions"
 import type { ToastStep } from "~/components/ui/toast/useToastsStore"
 import PWN_LOAN_ABI from "~/assets/abis/v1.5/PWNLoan"
@@ -17,7 +17,7 @@ export default function useBorrow() {
     const { address: userAddress, chainId: connectedChainId } = useAccount()
 
     const getCollateralAmountFromCreditAmount = async (creditAmount: bigint) => {
-        return await readContract(getWagmiConfig(), {
+        return await readContract(wagmiConfig, {
             abi: PWN_INSTALLMENTS_PRODUCT_ABI,
             functionName: 'getCollateralAmount',
             address: PWN_INSTALLMENTS_PRODUCT_ADDRESS,
@@ -36,7 +36,7 @@ export default function useBorrow() {
     const approveForAcceptIfNeeded = async (step: ToastStep, creditAmount: bigint) => {
         const collateralAmount = await getCollateralAmountFromCreditAmount(creditAmount)
 
-        const currentAllowance = await readContract(getWagmiConfig(), {
+        const currentAllowance = await readContract(wagmiConfig, {
             abi: erc20Abi,
             functionName: 'allowance',
             args: [userAddress.value!, PWN_LOAN_ADDRESS],
@@ -62,7 +62,7 @@ export default function useBorrow() {
     }
 
     const acceptProposal = async (step: ToastStep, creditAmount: bigint) => {
-        const proposalData = await readContract(getWagmiConfig(), {
+        const proposalData = await readContract(wagmiConfig, {
             abi: PWN_INSTALLMENTS_PRODUCT_ABI,
             functionName: 'encodeProposalData',
             address: PWN_INSTALLMENTS_PRODUCT_ADDRESS,
@@ -93,7 +93,7 @@ export default function useBorrow() {
         }
 
         // throws error if the tx would revert
-        await simulateContract(getWagmiConfig(), {
+        await simulateContract(wagmiConfig, {
             abi: PWN_LOAN_ABI,
             functionName: 'create',
             args: [proposalSpec, lenderSpec, borrowerSpec, '0x'],
@@ -112,7 +112,7 @@ export default function useBorrow() {
     }
 
     const approveForRepayIfNeeded = async (step: ToastStep, repaymentAmount: bigint) => {
-        const currentAllowance = await readContract(getWagmiConfig(), {
+        const currentAllowance = await readContract(wagmiConfig, {
             abi: erc20Abi,
             functionName: 'allowance',
             args: [userAddress.value!, PWN_LOAN_ADDRESS],
@@ -134,7 +134,7 @@ export default function useBorrow() {
     }
 
     const getLoanId = async () => {
-        return await readContract(getWagmiConfig(), {
+        return await readContract(wagmiConfig, {
             abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
             functionName: 'loanId',
             args: [],
@@ -144,7 +144,7 @@ export default function useBorrow() {
     }
 
     const getRemainingDebt = async (loanId: bigint) => {
-        return await readContract(getWagmiConfig(), {
+        return await readContract(wagmiConfig, {
             abi: PWN_LOAN_ABI,
             functionName: 'getLOANDebt',
             args: [loanId],
@@ -177,7 +177,7 @@ export default function useBorrow() {
     const getNextPaymentDeadline = async (loanId: bigint): Promise<bigint | null> => {
         try {
             // Get loan data (returns tuple: [apr, defaultTimestamp, debtLimitTangent])
-            const loanData = await readContract(getWagmiConfig(), {
+            const loanData = await readContract(wagmiConfig, {
                 abi: PWN_INSTALLMENTS_PRODUCT_ABI,
                 functionName: 'loanData',
                 address: PWN_INSTALLMENTS_PRODUCT_ADDRESS,
@@ -186,7 +186,7 @@ export default function useBorrow() {
             })
 
             // Get DEBT_LIMIT_TANGENT_DECIMALS constant
-            const debtLimitTangentDecimals = await readContract(getWagmiConfig(), {
+            const debtLimitTangentDecimals = await readContract(wagmiConfig, {
                 abi: PWN_INSTALLMENTS_PRODUCT_ABI,
                 functionName: 'DEBT_LIMIT_TANGENT_DECIMALS',
                 address: PWN_INSTALLMENTS_PRODUCT_ADDRESS,

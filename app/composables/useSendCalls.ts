@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/vue-query'
 import { getCapabilities, sendCalls, waitForCallsStatus } from '@wagmi/core'
 import type { Address, Call, Capabilities } from 'viem'
 import { ref, watchEffect } from 'vue'
-import { getWagmiConfig } from '~/config/appkit'
+import { wagmiConfig } from '~/config/appkit'
 import { PROPOSAL_CHAIN_ID } from '~/constants/proposalConstants'
 import { useAccount } from '@wagmi/vue'
 import type { ToastStep } from '~/components/ui/toast/useToastsStore'
@@ -12,7 +12,7 @@ export const canSendCalls = async (userAddress: Address) => {
 
     try {
         // Check if wallet supports batch transactions
-        capabilities = await getCapabilities(getWagmiConfig(), {
+        capabilities = await getCapabilities(wagmiConfig, {
             account: userAddress,
             chainId: PROPOSAL_CHAIN_ID,
         })
@@ -46,12 +46,12 @@ export const useSendCalls = () => {
         }
         // TODO do we also need to handle here switching of the chain?
         try {
-            const { id: batchId } = await sendCalls(getWagmiConfig(), {
+            const { id: batchId } = await sendCalls(wagmiConfig, {
                 calls,
                 account: userAddress.value,
                 chainId: PROPOSAL_CHAIN_ID,
             })
-            const status = await waitForCallsStatus(getWagmiConfig(), {
+            const status = await waitForCallsStatus(wagmiConfig, {
                 id: batchId,
                 timeout: 150_000, // 150 seconds
             })

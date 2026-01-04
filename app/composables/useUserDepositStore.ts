@@ -5,7 +5,7 @@ import { PWN_CROWDSOURCE_LENDER_VAULT_ADDRESS, OLD_PWN_CROWDSOURCE_LENDER_VAULT_
 import PWN_CROWDSOURCE_LENDER_VAULT_ABI from '~/assets/abis/v1.5/PWNCrowdsourceLenderVault'
 import { formatDecimalPoint } from '~/lib/format-decimals'
 import { computedAsync } from '@vueuse/core'
-import { getWagmiConfig } from '~/config/appkit'
+import { wagmiConfig } from '~/config/appkit'
 import { readContract } from '@wagmi/core/actions'
 
 export const useUserDepositStore = defineStore('userDeposit', () => {
@@ -56,7 +56,7 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
 
             if (oldVaultUserShares.value > 0n) {
                 promises.push(
-                    readContract(getWagmiConfig(), {
+                    readContract(wagmiConfig, {
                         abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
                         functionName: 'convertToAssets',
                         args: [oldVaultUserShares.value],
@@ -68,7 +68,7 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
 
             if (newVaultUserShares.value > 0n) {
                 promises.push(
-                    readContract(getWagmiConfig(), {
+                    readContract(wagmiConfig, {
                         abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
                         functionName: 'convertToAssets',
                         args: [newVaultUserShares.value],
@@ -95,7 +95,7 @@ export const useUserDepositStore = defineStore('userDeposit', () => {
                 return 0n
             }
 
-            const userAssets = await readContract(getWagmiConfig(), {
+            const userAssets = await readContract(wagmiConfig, {
                 abi: PWN_CROWDSOURCE_LENDER_VAULT_ABI,
                 functionName: 'convertToAssets',
                 args: [oldVaultUserShares.value],
