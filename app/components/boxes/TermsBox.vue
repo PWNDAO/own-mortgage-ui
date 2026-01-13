@@ -43,31 +43,6 @@
         
         <!-- Expandable Details -->
         <Accordion type="single" collapsible class="mt-3">
-            <AccordionItem value="mortgage-functionality">
-                <AccordionTrigger class="text-sm text-gray-400 hover:text-gray-200">
-                    How Does The Mortgage Work?
-                </AccordionTrigger>
-                <AccordionContent>
-                    <p class="leading-relaxed text-sm sm:text-base mb-4 text-justify">
-                        This mortgage is a decentralized, crowdfunded DeFi loan designed to bootstrap community projects by leveraging crypto collateral (weETH) with a 75% loan-to-value ratio over five years. 
-                        Supporters lend stablecoins (USDC) at a modest interest rate of 2%, receiving gradual loan repayments along with non-monetary rewards like memberships and event access. 
-                        By distributing risk across many lenders instead of relying on one, this setup encourages community involvement and ensures more accessible and sustainable funding.
-                    </p>
-
-                    <a href="https://paragraph.com/@bordel/decentralized-crowdloaning" target="_blank">
-                        <Button variant="outline" class="w-full">
-                            <span>Learn More About Bordel Mortgage</span>
-                            <img
-                                src="/icons/external.svg"
-                                alt="Bordel Hackerspace Link"
-                                class="w-4 h-4 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
-                                style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
-                            />
-                        </Button>
-                    </a>
-                </AccordionContent>
-            </AccordionItem>
-            
             <AccordionItem value="loan-default">
                 <AccordionTrigger class="text-sm text-gray-400 hover:text-gray-200">
                     Loan Default

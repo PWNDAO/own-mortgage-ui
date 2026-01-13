@@ -2,7 +2,32 @@
     <div class="bg-card border rounded-xl p-4 sm:p-6 order-2 lg:order-none shadow-lg">
         <h3 class="font-heading text-xl sm:text-2xl mb-3">Story</h3>
         <!-- note: using unmount-on-hide="false" to make sure the image is downloaded immediately right after the page is opened -->
-        <Accordion :default-value="[ACCORDION_ITEMS_ID.WHAT_IS_BORDEL]" type="multiple" :unmount-on-hide="false">
+        <Accordion :default-value="[ACCORDION_ITEMS_ID.MORTGAGE_WORK, ACCORDION_ITEMS_ID.WHAT_IS_BORDEL]" type="multiple" :unmount-on-hide="false">
+            <AccordionItem :value="ACCORDION_ITEMS_ID.MORTGAGE_WORK">
+                <AccordionTrigger class="font-heading text-base sm:text-lg md:text-xl font-semibold cursor-pointer">
+                    <span style="margin-top: -4px;">How Does The Mortgage Work?</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                    <p class="leading-relaxed text-sm sm:text-base mb-4 text-justify">
+                        This mortgage is a decentralized, crowdfunded DeFi loan designed to bootstrap community projects by leveraging crypto collateral (weETH) with a 75% loan-to-value ratio over five years. 
+                        Supporters lend stablecoins (USDC) at a modest interest rate of 2.5%, receiving gradual loan repayments along with non-monetary rewards like memberships and event access. 
+                        By distributing risk across many lenders instead of relying on one, this setup encourages community involvement and ensures more accessible and sustainable funding.
+                    </p>
+
+                    <a href="https://paragraph.com/@bordel/decentralized-crowdloaning" target="_blank">
+                        <Button variant="outline" class="w-full">
+                            <span>Full article about Bordel Mortgage</span>
+                            <img
+                                src="/icons/external.svg"
+                                alt="Bordel Hackerspace Link"
+                                class="w-4 h-4 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
+                                style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
+                            />
+                        </Button>
+                    </a>
+                </AccordionContent>
+            </AccordionItem>
+            
             <AccordionItem :value="ACCORDION_ITEMS_ID.WHAT_IS_BORDEL">
                 <AccordionTrigger class="font-heading text-base sm:text-lg md:text-xl font-semibold cursor-pointer">
                     <span style="margin-top: -4px;">What Is Bordel Hackerspace?</span>
@@ -24,6 +49,18 @@
                             <img
                                 src="/icons/external.svg"
                                 alt="Bordel Hackerspace Link"
+                                class="w-4 h-4 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
+                                style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
+                            />
+                        </Button>
+                    </a>
+
+                    <a href="https://signal.group/#CjQKILd9jG3SmC5jEkCf0VbavrETuLixY7wxITmlkg8dWbdrEhD6qay9BKGWmjYLRFKFZjeB" target="_blank" class="mt-3 block">
+                        <Button variant="outline" class="w-full">
+                            <span>Join Bordel's Signal Group</span>
+                            <img
+                                src="/icons/external.svg"
+                                alt="Signal Group Link"
                                 class="w-4 h-4 transition-all duration-200 group-hover:brightness-0 group-hover:invert"
                                 style="filter: brightness(0) saturate(100%) invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(89%);"
                             />
@@ -89,6 +126,7 @@
 <script lang="ts" setup>
 
 enum ACCORDION_ITEMS_ID {
+    MORTGAGE_WORK = 'mortgage-work',
     WHAT_IS_BORDEL = 'what-is-bordel',
 }
 
